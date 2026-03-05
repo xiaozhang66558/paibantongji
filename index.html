@@ -1700,34 +1700,35 @@ function populateStatsFilters(){
 
 function renderStatsPage(){
 
-const posFilter =
-document.getElementById("statsPos")?.value || "";
+  const posFilter = document.getElementById("statsPos")?.value || "";
+  const dateFilter = document.getElementById("statsDate")?.value || "";
 
-const dateFilter =
-document.getElementById("statsDate")?.value || "";
+  // ✅ Lấy ID hợp lệ từ FILTERED (filterBar trên cùng đã áp dụng ở đây)
+  const allowedIds = new Set(
+    (FILTERED || [])
+      .map(r => (r["ID"] || "").trim())
+      .filter(Boolean)
+  );
 
-// ✅ Lấy ID hợp lệ từ FILTERED (filterBar trên cùng đã áp dụng ở đây)
-const allowedIds = new Set(
-  (FILTERED || [])
-    .map(r => (r["ID"] || "").trim())
-    .filter(Boolean)
-);
+  // ✅ rows = ORDER_STATS đã bị filter theo FILTERED + statsPos + statsDate
+  const rows = Object.entries(ORDER_STATS || {})
+    .filter(([id, v]) => {
 
-// ✅ Chỉ giữ ORDER_STATS của các ID đang nằm trong FILTERED
-const rows = Object.entries(ORDER_STATS || {})
-  .filter(([id, v]) => allowedIds.has(id));
-  if(!emp) return false;
+      if(!allowedIds.has(id)) return false;
 
-  if(posFilter && emp["岗位"] !== posFilter)
-    return false;
+      // lấy emp để lọc岗位
+      const emp = FILTERED.find(r => (r["ID"] || "").trim() === id) 
+               || RAW.find(r => (r["ID"] || "").trim() === id);
 
-  if(dateFilter){
-    if(!v[dateFilter]) return false;
-  }
+      if(!emp) return false;
 
-  return true;
+      if(posFilter && (emp["岗位"] || "") !== posFilter) return false;
 
-});
+      if(dateFilter && !v?.[dateFilter]) return false;
+
+      return true;
+    });
+
   const dates = window.ORDER_DATES || [];
 
   els.pageStats.innerHTML = `
@@ -1747,82 +1748,67 @@ const rows = Object.entries(ORDER_STATS || {})
       <div class="tableWrap">
         <table>
           <thead>
-
-          <tr>
-            <th rowspan="2">ID</th>
-            <th rowspan="2">姓名</th>
-            <th rowspan="2">团队</th>
-            <th rowspan="2">班次</th>
-            <th rowspan="2">国家</th>
-            <th rowspan="2">岗位</th>
-            <th rowspan="2">盘口</th>
-            <th rowspan="2">入职时间</th>
-            <th rowspan="2">总</th>
-            <th rowspan="2">平均每天处理</th>
-
-            ${dates.map(d=>`<th colspan="2">${d}</th>`).join("")}
-
-          </tr>
-
-          <tr>
-            ${dates.map(()=>`
-            <th>成功</th>
-            <th>驳回</th>
-            `).join("")}
-          </tr>
-
+            <tr>
+              <th rowspan="2">ID</th>
+              <th rowspan="2">姓名</th>
+              <th rowspan="2">团队</th>
+              <th rowspan="2">班次</th>
+              <th rowspan="2">国家</th>
+              <th rowspan="2">岗位</th>
+              <th rowspan="2">盘口</th>
+              <th rowspan="2">入职时间</th>
+              <th rowspan="2">总</th>
+              <th rowspan="2">平均每天处理</th>
+              ${dates.map(d=>`<th colspan="2">${d}</th>`).join("")}
+            </tr>
+            <tr>
+              ${dates.map(()=>`<th>成功</th><th>驳回</th>`).join("")}
+            </tr>
           </thead>
           <tbody>
 
-          ${rows.map(([id,v])=>{
+            ${rows.map(([id,v])=>{
 
-          const emp = RAW.find(r => (r["ID"] || "").trim() === id.trim());
+              const emp = FILTERED.find(r => (r["ID"] || "").trim() === id)
+                       || RAW.find(r => (r["ID"] || "").trim() === id);
 
-          const name = emp?.["姓名"] || "-";
-          const team = emp?.["团队"] || "-";
-          const shift = emp?.["班次"] || "-";
-          const country = emp?.["国家"] || "-";
-          const pos = emp?.["岗位"] || "-";
-          const pan = emp?.["盘口"] || "-";
-          const join = ACCOUNT_JOIN_DATE[id] || "-";
-          let total = 0;
+              const name = emp?.["姓名"] || "-";
+              const team = emp?.["团队"] || "-";
+              const shift = emp?.["班次"] || "-";
+              const country = emp?.["国家"] || "-";
+              const pos = emp?.["岗位"] || "-";
+              const pan = emp?.["盘口"] || "-";
+              const join = ACCOUNT_JOIN_DATE[id] || "-";
 
-          dates.forEach(d=>{
-            const day = v[d] || {success:0,reject:0};
-            total += (day.success || 0);
-          });
+              let total = 0;
+              dates.forEach(d=>{
+                const day = v?.[d] || {success:0,reject:0};
+                total += Number(day.success || 0);
+              });
 
-          const avg = dates.length ? Math.round(total / dates.length) : 0;
+              const avg = dates.length ? Math.round(total / dates.length) : 0;
 
-          return `
-          <tr>
+              return `
+                <tr>
+                  <td>${esc(id)}</td>
+                  <td>${esc(name)}</td>
+                  <td>${esc(team)}</td>
+                  <td>${esc(shift)}</td>
+                  <td>${esc(country)}</td>
+                  <td>${esc(pos)}</td>
+                  <td class="pan-cell" onclick="showPan('${esc(pan)}')">${esc(pan)}</td>
+                  <td>${esc(join)}</td>
+                  <td>${total}</td>
+                  <td>${avg}</td>
 
-          <td>${id}</td>
-          <td>${name}</td>
-          <td>${team}</td>
-          <td>${shift}</td>
-          <td>${country}</td>
-          <td>${pos}</td>
-          <td class="pan-cell" onclick="showPan('${pan}')">${pan}</td>
-          <td>${join}</td>
-          <td>${total}</td>
-          <td>${avg}</td>
+                  ${dates.map(d=>{
+                    const day = v?.[d] || {success:0,reject:0};
+                    return `<td>${day.success || 0}</td><td>${day.reject || 0}</td>`;
+                  }).join("")}
 
-          ${dates.map(d=>{
-
-          const day = v[d] || {success:0,reject:0};
-
-          return `
-          <td>${day.success}</td>
-          <td>${day.reject}</td>
-          `;
-
-          }).join("")}
-
-          </tr>
-          `;
-
-          }).join("")}
+                </tr>
+              `;
+            }).join("")}
 
           </tbody>
         </table>
@@ -1830,22 +1816,13 @@ const rows = Object.entries(ORDER_STATS || {})
     </div>
   `;
 
-    populateStatsFilters();
+  populateStatsFilters();
 
   const posSel = document.getElementById("statsPos");
-  if(posSel){
-    posSel.onchange = ()=>{
-      renderStatsPage();
-    };
-  }
+  if(posSel) posSel.onchange = renderStatsPage;
 
   const dateSel = document.getElementById("statsDate");
-  if(dateSel){
-    dateSel.onchange = ()=>{
-      renderStatsPage();
-    };
-  }
-
+  if(dateSel) dateSel.onchange = renderStatsPage;
 }
   
 load();
