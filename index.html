@@ -595,12 +595,11 @@ function normDateISO(v){
 
 function esc(str){
   return (str??"").toString()
-    .replaceAll("&","&amp;").replaceAll("<","&lt;")
-    .replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
-}
-  return (str??"").toString()
-    .replaceAll("&","&amp;").replaceAll("<","&lt;")
-    .replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
 }
 
 /* =========================================================
@@ -1399,6 +1398,7 @@ async function load(){
     applyFilters();
     populateStatsFilters();
     renderStatsPage();
+    renderOrderStats();   // thêm dòng này
     
   }catch(err){
     console.error(err);
@@ -1574,14 +1574,7 @@ async function loadOrderStats(){
   ORDER_STATS = map;
   window.ORDER_DATES = [...dates].sort();
 }
-    map[id][date].success += Number(r["已处理"] || 0);
-    map[id][date].reject += Number(r["已收回/已提交"] || 0);
 
-  });
-
-  ORDER_STATS = map;
-  window.ORDER_DATES = [...dates].sort();
-}
   // ===============================
 // RENDER ORDER STATS
 // ===============================
