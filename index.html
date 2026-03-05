@@ -1316,6 +1316,7 @@ async function load(){
 
     RAW = data
       .map(r=>({
+        "入职时间": normPick(r, ["入职时间","入職時間","Join Date","入职","入職"]),
         "负责人":   normPick(r, ["负责人","負責人","Owner","owner"]),
         "现场培训": normPick(r, ["现场培训","現場培訓","Onsite Training","现场训","現場訓練"]),
         "线上组长": normPick(r, ["线上组长","線上組長","Online Leader","组长","組長"]),
@@ -1586,6 +1587,15 @@ function renderOrderStats(){
           const country = emp?.["国家"] || "-";
           const pos = emp?.["岗位"] || "-";
           const pan = emp?.["盘口"] || "-";
+          const join = emp?.["入职时间"] || "-";
+          let total = 0;
+
+          dates.forEach(d=>{
+            const day = v[d] || {success:0,reject:0};
+            total += (day.success || 0);
+          });
+
+          const avg = dates.length ? Math.round(total / dates.length) : 0;
 
           return `
           <tr>
@@ -1720,6 +1730,9 @@ const rows = Object.entries(ORDER_STATS || {})
             <th rowspan="2">国家</th>
             <th rowspan="2">岗位</th>
             <th rowspan="2">盘口</th>
+            <th rowspan="2">入职时间</th>
+            <th rowspan="2">总</th>
+            <th rowspan="2">平均每天处理</th>
 
             ${dates.map(d=>`<th colspan="2">${d}</th>`).join("")}
 
@@ -1744,6 +1757,15 @@ const rows = Object.entries(ORDER_STATS || {})
           const country = emp?.["国家"] || "-";
           const pos = emp?.["岗位"] || "-";
           const pan = emp?.["盘口"] || "-";
+          const join = emp?.["入职时间"] || "-";
+          let total = 0;
+
+          dates.forEach(d=>{
+            const day = v[d] || {success:0,reject:0};
+            total += (day.success || 0);
+          });
+
+          const avg = dates.length ? Math.round(total / dates.length) : 0;
 
           return `
           <tr>
@@ -1754,6 +1776,9 @@ const rows = Object.entries(ORDER_STATS || {})
           <td>${country}</td>
           <td>${pos}</td>
           <td>${pan}</td>
+          <td>${join}</td>
+          <td>${total}</td>
+          <td>${avg}</td>
 
           ${dates.map(d=>{
 
