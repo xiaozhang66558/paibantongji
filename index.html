@@ -1638,10 +1638,40 @@ function populateStatsFilters(){
     dateSel.appendChild(opt);
   });
 }
+  const posSel = document.getElementById("statsPos");
+
+if(posSel){
+
+  const poss = [...new Set(RAW.map(r=>r["岗位"]).filter(Boolean))];
+
+  posSel.innerHTML = `<option value="">全部岗位</option>`;
+
+  poss.forEach(p=>{
+    const opt = document.createElement("option");
+    opt.value = p;
+    opt.textContent = p;
+    posSel.appendChild(opt);
+  });
+
+}
 
 function renderStatsPage(){
 
-  const rows = Object.entries(ORDER_STATS || {});
+  const posFilter =
+document.getElementById("statsPos")?.value || "";
+
+const rows = Object.entries(ORDER_STATS || {})
+.filter(([id])=>{
+
+  const emp = RAW.find(r=>r["ID"]===id);
+  if(!emp) return false;
+
+  if(posFilter && emp["岗位"] !== posFilter)
+    return false;
+
+  return true;
+
+});
   const dates = window.ORDER_DATES || [];
 
   els.pageStats.innerHTML = `
@@ -1661,11 +1691,26 @@ function renderStatsPage(){
       <div class="tableWrap">
         <table>
           <thead>
-            <tr>
-              <th>ID</th>
-              <th>已处理</th>
-              <th>失败</th>
-            </tr>
+
+          <tr>
+            <th rowspan="2">ID</th>
+            <th rowspan="2">姓名</th>
+            <th rowspan="2">班次</th>
+            <th rowspan="2">国家</th>
+            <th rowspan="2">岗位</th>
+            <th rowspan="2">盘口</th>
+
+            ${dates.map(d=>`<th colspan="2">${d}</th>`).join("")}
+
+          </tr>
+
+          <tr>
+            ${dates.map(()=>`
+            <th>成功</th>
+            <th>驳回</th>
+            `).join("")}
+          </tr>
+
           </thead>
           <tbody>
 
@@ -1713,10 +1758,10 @@ function renderStatsPage(){
 
   populateStatsFilters();
 
-  const dateSel = document.getElementById("statsDate");
-  if(dateSel){
-    dateSel.onchange = async ()=>{
-      await loadOrderStats();
+  const posSel = document.getElementById("statsPos");
+
+  if(posSel){
+    posSel.onchange = ()=>{
       renderStatsPage();
     };
   }
