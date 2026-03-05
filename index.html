@@ -571,6 +571,42 @@ function s(v){ return (v ?? "").toString().trim(); }
 function norm(v){ return s(v).replace(/\s+/g," ").trim(); }
 function uniq(arr){ return [...new Set(arr.filter(Boolean))]; }
 function esc(str){
+function normDateISO(v){
+  const str = (v ?? "").toString().trim();
+  if(!str) return "";
+
+  // đã là ISO YYYY-MM-DD
+  if(/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+
+  // YYYY/MM/DD
+  let m = str.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})$/);
+  if(m){
+    const y = m[1];
+    const mm = String(parseInt(m[2],10)).padStart(2,"0");
+    const dd = String(parseInt(m[3],10)).padStart(2,"0");
+    return `${y}-${mm}-${dd}`;
+  }
+
+  // D/M/YYYY hoặc M/D/YYYY  (ví dụ: 2/3/2026)
+  m = str.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+  if(m){
+    let a = parseInt(m[1],10);
+    let b = parseInt(m[2],10);
+    const y = m[3];
+
+    let day, month;
+
+    if(a > 12){ day = a; month = b; }
+    else if(b > 12){ month = a; day = b; }
+    else { day = a; month = b; }
+
+    const mm = String(month).padStart(2,"0");
+    const dd = String(day).padStart(2,"0");
+    return `${y}-${mm}-${dd}`;
+  }
+
+  return str;
+}
   return (str??"").toString()
     .replaceAll("&","&amp;").replaceAll("<","&lt;")
     .replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
@@ -1529,7 +1565,7 @@ async function loadOrderStats(){
 
   data.forEach(r=>{
 
-    dates.add(r["日期"]);   // phải nằm trong loop
+    dates.add(date);  // phải nằm trong loop
 
 
     const acc = (r["后台账号"] || "").trim();
@@ -1537,7 +1573,7 @@ async function loadOrderStats(){
 
     if(!id) return;
 
-    const date = r["日期"];
+    const date = normDateISO(r["日期"]);
 
     if(!map[id]) map[id] = {};
 
@@ -1631,7 +1667,7 @@ function renderOrderStats(){
           <td>${pos}</td>
           <td class="pan-cell" onclick="showPan('${pan}')">${pan}</td>
 
-          ${dates.map(d=>{
+          ${activeDates.map(d=>{
 
           const day = v[d] || {success:0,reject:0};
 
