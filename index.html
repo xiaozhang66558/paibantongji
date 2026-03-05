@@ -1497,7 +1497,9 @@ async function loadAccountMap(){
       .split("/")
       .map(a=>a.trim())
       .filter(Boolean);
-    const joinDate = (r["入职时间"] || "").trim();  
+    const joinDate = (r["入职时间"] || "").trim();
+
+    ACCOUNT_JOIN_DATE[id] = joinDate;
 
     accounts.forEach(acc=>{
       ACCOUNT_MAP[acc] = id;
@@ -1603,7 +1605,7 @@ function renderOrderStats(){
           const country = emp?.["国家"] || "-";
           const pos = emp?.["岗位"] || "-";
           const pan = emp?.["盘口"] || "-";
-          const join = emp?.["入职时间"] || "-";
+          const join = ACCOUNT_JOIN_DATE[id] || "-";
           let total = 0;
 
           dates.forEach(d=>{
@@ -1773,7 +1775,7 @@ const rows = Object.entries(ORDER_STATS || {})
           const country = emp?.["国家"] || "-";
           const pos = emp?.["岗位"] || "-";
           const pan = emp?.["盘口"] || "-";
-          const join = emp?.["入职时间"] || "-";
+          const join = ACCOUNT_JOIN_DATE[id] || "-";
           let total = 0;
 
           dates.forEach(d=>{
