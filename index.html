@@ -447,6 +447,7 @@
     <div class="tab" data-page="employees">人员</div>
     <div class="tab" data-page="schedule">排班表</div>
     <div class="tab" data-page="pan">盘口人数</div>
+    <div class="tab" data-page="stats">统计</div>
   </div>
 
   <div class="filterBar" id="filterBar">
@@ -469,6 +470,7 @@
   <!-- Schedule -->
   <div class="page" id="page-schedule"></div>
   <div class="page" id="page-pan"></div>
+  <div class="page" id="page-stats"></div>
 </div>
 
 <!-- MODAL -->
@@ -517,6 +519,7 @@ const els = {
   pageEmployees: document.getElementById("page-employees"),
   pageSchedule: document.getElementById("page-schedule"),
   pagePan: document.getElementById("page-pan"),
+  pageStats: document.getElementById("page-stats"),
 
   tabs: document.querySelectorAll(".tab"),
 
@@ -1332,6 +1335,7 @@ async function load(){
     buildSelectOptions(els.posSel, poss, "All positions（岗位）");
 
     applyFilters();
+    renderStatsPage();
     
     renderOrderStats();
   }catch(err){
@@ -1553,6 +1557,47 @@ function renderOrderStats(){
     .getElementById("page-dashboard")
     .insertAdjacentHTML("beforeend", html);
 
+}
+
+  function renderStatsPage(){
+
+  const rows = Object.entries(ORDER_STATS || {})
+    .sort((a,b)=> (b[1].processed||0) - (a[1].processed||0));
+
+  els.pageStats.innerHTML = `
+    <div class="card">
+
+      <h2>员工订单处理统计</h2>
+      <div class="sub">按员工 ID 汇总</div>
+
+      <div class="tableWrap">
+        <table>
+
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>已处理</th>
+              <th>失败</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            ${rows.map(([id,v])=>`
+              <tr>
+                <td>${id}</td>
+                <td>${v.processed}</td>
+                <td>${v.failed}</td>
+              </tr>
+            `).join("")}
+
+          </tbody>
+
+        </table>
+      </div>
+
+    </div>
+  `;
 }
 
 load();
