@@ -1562,9 +1562,7 @@ function renderOrderStats(){
         <th rowspan="2">岗位</th>
         <th rowspan="2">盘口</th>
 
-        ${dates.map(d=>`
-        <th colspan="2">${d}</th>
-        `).join("")}
+        ${dates.map(d=>`<th colspan="2">${d}</th>`).join("")}
 
         </tr>
 
@@ -1646,8 +1644,8 @@ function populateStatsFilters(){
 
 function renderStatsPage(){
 
-  const rows = Object.entries(ORDER_STATS || {})
-    .sort((a,b)=> (b[1].processed||0) - (a[1].processed||0));
+  const rows = Object.entries(ORDER_STATS || {});
+  const dates = window.ORDER_DATES || [];
 
   els.pageStats.innerHTML = `
     <div class="card">
@@ -1673,13 +1671,43 @@ function renderStatsPage(){
             </tr>
           </thead>
           <tbody>
-            ${rows.map(([id,v])=>`
-              <tr>
-                <td>${esc(id)}</td>
-                <td>${Number(v.processed||0)}</td>
-                <td>${Number(v.failed||0)}</td>
-              </tr>
-            `).join("")}
+
+          ${rows.map(([id,v])=>{
+
+          const emp = RAW.find(r=>r["ID"]===id);
+
+          const name = emp?.["姓名"] || "-";
+          const shift = emp?.["班次"] || "-";
+          const country = emp?.["国家"] || "-";
+          const pos = emp?.["岗位"] || "-";
+          const pan = emp?.["盘口"] || "-";
+
+          return `
+          <tr>
+
+          <td>${id}</td>
+          <td>${name}</td>
+          <td>${shift}</td>
+          <td>${country}</td>
+          <td>${pos}</td>
+          <td>${pan}</td>
+
+          ${dates.map(d=>{
+
+          const day = v[d] || {success:0,reject:0};
+
+          return `
+          <td>${day.success}</td>
+          <td>${day.reject}</td>
+          `;
+
+          }).join("")}
+
+          </tr>
+          `;
+
+          }).join("")}
+
           </tbody>
         </table>
       </div>
