@@ -379,6 +379,17 @@
       font-weight:800;
       font-size:12px;
     }
+    .statsFilters{
+    display:flex;
+    gap:10px;
+    margin:15px 0;
+    }
+
+    .statsFilters select{
+    padding:6px 10px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    }
 
     /* ===== FORCE CENTER ALL TEXT ===== */
     body,
@@ -1335,7 +1346,23 @@ async function load(){
     buildSelectOptions(els.posSel, poss, "All positions（岗位）");
 
     applyFilters();
-    renderStatsPage();
+    renderStatsPage();  
+    populateStatsFilters();
+
+    function populateStatsFilters(){
+
+    const dateSel = document.getElementById("statsDate");
+
+    if(!dateSel) return;
+
+    ORDER_DATES.forEach(d=>{
+    const opt=document.createElement("option");
+    opt.value=d;
+    opt.textContent=d;
+    dateSel.appendChild(opt);
+    });
+
+}
     
     renderOrderStats();
   }catch(err){
@@ -1481,13 +1508,21 @@ async function loadAccountMap(){
 // ===============================
 
 async function loadOrderStats(){
+  const dates = new Set();
+  dates.add(r["日期"]);
 
   const res = await fetch(ORDER_API);
   const data = await res.json();
 
   const map = {};
 
+  const selectedDate =
+  document.getElementById("statsDate")?.value;
+
   data.forEach(r=>{
+
+  if(selectedDate && r["日期"]!==selectedDate)
+  return;
 
     const acc = (r["后台账号"] || "").trim();
 
@@ -1508,6 +1543,7 @@ async function loadOrderStats(){
   });
 
   ORDER_STATS = map;
+  window.ORDER_DATES = [...dates].sort();
 
 }
   // ===============================
@@ -1565,13 +1601,25 @@ function renderOrderStats(){
     .sort((a,b)=> (b[1].processed||0) - (a[1].processed||0));
 
   els.pageStats.innerHTML = `
-    <div class="card">
+  <div class="card">
 
-      <h2>员工订单处理统计</h2>
-      <div class="sub">按员工 ID 汇总</div>
+  <h2>员工订单处理统计</h2>
+  <div class="sub">按员工 ID 汇总</div>
 
-      <div class="tableWrap">
-        <table>
+  <div class="statsFilters">
+
+  <select id="statsDate">
+  <option value="">全部日期</option>
+  </select>
+
+  <select id="statsPos">
+  <option value="">全部岗位</option>
+  </select>
+
+  </div>
+
+  <div class="tableWrap">
+  <table>
 
           <thead>
             <tr>
@@ -1599,6 +1647,10 @@ function renderOrderStats(){
     </div>
   `;
 }
+  document.getElementById("statsDate").onchange = () => {
+loadOrderStats();
+renderStatsPage();
+};
 
 load();
 </script>
