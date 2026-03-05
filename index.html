@@ -1346,28 +1346,9 @@ async function load(){
     buildSelectOptions(els.posSel, poss, "All positions（岗位）");
 
     applyFilters();
-    renderStatsPage();  
+    renderStatsPage();
     populateStatsFilters();
-
-    function populateStatsFilters(){
-
-      const dateSel = document.getElementById("statsDate");
-
-      if(!dateSel || !window.ORDER_DATES) return;
-
-      dateSel.innerHTML =
-      `<option value="">全部日期</option>`;
-
-      ORDER_DATES.forEach(d=>{
-        const opt=document.createElement("option");
-        opt.value=d;
-        opt.textContent=d;
-        dateSel.appendChild(opt);
-      });
-
-  }
     
-    renderOrderStats();
   }catch(err){
     console.error(err);
     els.meta.textContent = "Load error: " + (err?.message || err);
@@ -1597,7 +1578,23 @@ function renderOrderStats(){
 
 }
 
-  function renderStatsPage(){
+  function populateStatsFilters(){
+
+  const dateSel = document.getElementById("statsDate");
+
+  if(!dateSel || !window.ORDER_DATES) return;
+
+  dateSel.innerHTML =
+  `<option value="">全部日期</option>`;
+
+  window.ORDER_DATES.forEach(d=>{
+    const opt = document.createElement("option");
+    opt.value = d;
+    opt.textContent = d;
+    dateSel.appendChild(opt);
+  });
+
+}
 
   const rows = Object.entries(ORDER_STATS || {})
     .sort((a,b)=> (b[1].processed||0) - (a[1].processed||0));
