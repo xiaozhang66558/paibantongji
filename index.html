@@ -491,6 +491,14 @@
    ========================================================= */
 const SHEET_API = "https://opensheet.elk.sh/1e38ZBHG0B0nxODaooPhgreG67A2RLxLxrpP8Sas_vZA/填表";
 
+// ===== ORDER STATISTICS API =====
+
+const ORDER_API =
+"https://opensheet.elk.sh/1m_nDeFS4rIP9KQqRO-ebteZXUz4H0Z3Pe3XSYDBNcew/填表";
+
+const ACCOUNT_API =
+"https://opensheet.elk.sh/1e38ZBHG0B0nxODaooPhgreG67A2RLxLxrpP8Sas_vZA/账号";
+
 /*
   Column mapping (by header names from your sheet):
   负责人        现场培训        线上组长        线上培训        组别        团队        姓名        ID        班次        国家        岗位        盘口        工作内容
@@ -498,6 +506,9 @@ const SHEET_API = "https://opensheet.elk.sh/1e38ZBHG0B0nxODaooPhgreG67A2RLxLxrpP
 
 let RAW = [];
 let FILTERED = [];
+
+let ACCOUNT_MAP = {};
+let ORDER_STATS = {};
 
 let charts = { pos:null, team:null, shift:null };
 
@@ -1276,6 +1287,10 @@ function buildShiftChart(labels, values){
    ========================================================= */
 async function load(){
   try{
+
+    await loadAccountMap();
+    await loadOrderStats();
+    
     els.meta.textContent = "Loading data from Google Sheet…";
 
     const res = await fetch(SHEET_API, { cache:"no-store" });
@@ -1317,6 +1332,8 @@ async function load(){
     buildSelectOptions(els.posSel, poss, "All positions（岗位）");
 
     applyFilters();
+    
+    renderOrderStats();
   }catch(err){
     console.error(err);
     els.meta.textContent = "Load error: " + (err?.message || err);
@@ -1429,6 +1446,113 @@ function renderPanPage(){
       </div>
     </div>
   `;
+}
+  // ===============================
+// LOAD ACCOUNT MAPPING
+// ===============================
+
+async function loadAccountMap(){
+
+  const res = await fetch(ACCOUNT_API);
+  const data = await res.json();
+
+  data.forEach(r=>{
+
+    const id = (r["ID"] || "").trim();
+
+    const accounts = (r["后台账号"] || "")
+      .split("/")
+      .map(a=>a.trim())
+      .filter(Boolean);
+
+    accounts.forEach(acc=>{
+      ACCOUNT_MAP[acc] = id;
+    });
+
+  });
+
+}
+  // ===============================
+// LOAD ORDER STATS
+// ===============================
+
+async function loadOrderStats(){
+
+  const res = await fetch(ORDER_API);
+  const data = await res.json();
+
+  const map = {};
+
+  data.forEach(r=>{
+
+    const acc = (r["操作人"] || "").trim();
+
+    const id = ACCOUNT_MAP[acc];
+
+    if(!id) return;
+
+    if(!map[id]){
+      map[id] = {
+        processed:0,
+        failed:0
+      };
+    }
+
+    map[id].processed += Number(r["已处理"] || 0);
+    map[id].failed += Number(r["已收回/已提交"] || 0);
+
+  });
+
+  ORDER_STATS = map;
+
+}
+  // ===============================
+// RENDER ORDER STATS
+// ===============================
+
+function renderOrderStats(){
+
+  const rows = Object.entries(ORDER_STATS)
+    .sort((a,b)=>b[1].processed - a[1].processed);
+
+  const html = `
+  <div class="card">
+
+    <h2>员工订单处理统计</h2>
+
+    <div class="tableWrap">
+      <table>
+
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>已处理</th>
+            <th>失败</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          ${rows.map(([id,v])=>`
+            <tr>
+              <td>${id}</td>
+              <td>${v.processed}</td>
+              <td>${v.failed}</td>
+            </tr>
+          `).join("")}
+
+        </tbody>
+
+      </table>
+    </div>
+
+  </div>
+  `;
+
+  document
+    .getElementById("page-dashboard")
+    .insertAdjacentHTML("beforeend", html);
+
 }
 
 load();
