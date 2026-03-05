@@ -700,6 +700,7 @@ function applyFilters(){
   renderEmployees();
   renderSchedule();
   renderPanPage();
+  renderStatsPage();
 }
 
 ["input","change"].forEach(evt=>{
@@ -1598,7 +1599,7 @@ function renderOrderStats(){
 
           ${rows.map(([id,v])=>{
 
-          const emp = RAW.find(r => (r["ID"] || "").trim() === id.trim());
+          const emp = FILTERED.find(r=>r["ID"]===id) || RAW.find(r=>r["ID"]===id);
 
           const name = emp?.["姓名"] || "-";
           const shift = emp?.["班次"] || "-";
@@ -1705,10 +1706,16 @@ document.getElementById("statsPos")?.value || "";
 const dateFilter =
 document.getElementById("statsDate")?.value || "";
 
-const rows = Object.entries(ORDER_STATS || {})
-.filter(([id,v])=>{
+// ✅ Lấy ID hợp lệ từ FILTERED (filterBar trên cùng đã áp dụng ở đây)
+const allowedIds = new Set(
+  (FILTERED || [])
+    .map(r => (r["ID"] || "").trim())
+    .filter(Boolean)
+);
 
-  const emp = RAW.find(r=>r["ID"]===id);
+// ✅ Chỉ giữ ORDER_STATS của các ID đang nằm trong FILTERED
+const rows = Object.entries(ORDER_STATS || {})
+  .filter(([id, v]) => allowedIds.has(id));
   if(!emp) return false;
 
   if(posFilter && emp["岗位"] !== posFilter)
@@ -1744,6 +1751,7 @@ const rows = Object.entries(ORDER_STATS || {})
           <tr>
             <th rowspan="2">ID</th>
             <th rowspan="2">姓名</th>
+            <th rowspan="2">团队</th>
             <th rowspan="2">班次</th>
             <th rowspan="2">国家</th>
             <th rowspan="2">岗位</th>
@@ -1771,6 +1779,7 @@ const rows = Object.entries(ORDER_STATS || {})
           const emp = RAW.find(r => (r["ID"] || "").trim() === id.trim());
 
           const name = emp?.["姓名"] || "-";
+          const team = emp?.["团队"] || "-";
           const shift = emp?.["班次"] || "-";
           const country = emp?.["国家"] || "-";
           const pos = emp?.["岗位"] || "-";
@@ -1790,6 +1799,7 @@ const rows = Object.entries(ORDER_STATS || {})
 
           <td>${id}</td>
           <td>${name}</td>
+          <td>${team}</td>
           <td>${shift}</td>
           <td>${country}</td>
           <td>${pos}</td>
