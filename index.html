@@ -390,6 +390,11 @@
     border-radius:6px;
     border:1px solid #ccc;
     }
+    .statsFilters input[type="date"]{
+      padding:6px 10px;
+      border-radius:6px;
+      border:1px solid #ccc;
+    }
 
     /* ===== FORCE CENTER ALL TEXT ===== */
     body,
@@ -1659,77 +1664,65 @@ function renderOrderStats(){
 // STATS PAGE
 // ===============================
 function populateStatsFilters(){
-
-  const dateSel = document.getElementById("statsDate");
   const posSel = document.getElementById("statsPos");
+  if(!posSel) return;
 
-  if(dateSel && window.ORDER_DATES){
+  const current = posSel.value || "";
 
-    dateSel.innerHTML = `<option value="">全部日期</option>`;
+  const poss = [...new Set((RAW || []).map(r => r["岗位"]).filter(Boolean))]
+    .sort((a,b)=>a.localeCompare(b,"zh"));
 
-    window.ORDER_DATES.forEach(d=>{
-      const opt = document.createElement("option");
-      opt.value = d;
-      opt.textContent = d;
-      dateSel.appendChild(opt);
-    });
+  posSel.innerHTML = `<option value="">全部岗位</option>`;
+  poss.forEach(p=>{
+    const opt = document.createElement("option");
+    opt.value = p;
+    opt.textContent = p;
+    posSel.appendChild(opt);
+  });
 
-  }
-
-  if(posSel){
-
-    const poss = [...new Set(RAW.map(r=>r["岗位"]).filter(Boolean))];
-
-    posSel.innerHTML = `<option value="">全部岗位</option>`;
-
-    poss.forEach(p=>{
-      const opt = document.createElement("option");
-      opt.value = p;
-      opt.textContent = p;
-      posSel.appendChild(opt);
-    });
-
-    posSel.onchange = ()=>{
-      renderStatsPage();
-    };
-
-  }
-
+  // giữ lại lựa chọn cũ (để khỏi bị “nhảy về 全部岗位”)
+  posSel.value = current;
 }
-
 
 function renderStatsPage(){
 
   const posFilter = document.getElementById("statsPos")?.value || "";
-  const dateFilter = document.getElementById("statsDate")?.value || "";
+  const fromDate = document.getElementById("statsFrom")?.value || "";
+  const toDate   = document.getElementById("statsTo")?.value || "";
 
-  // ✅ Lấy ID hợp lệ từ FILTERED (filterBar trên cùng đã áp dụng ở đây)
   const allowedIds = new Set(
     (FILTERED || [])
       .map(r => (r["ID"] || "").trim())
       .filter(Boolean)
   );
 
-  // ✅ rows = ORDER_STATS đã bị filter theo FILTERED + statsPos + statsDate
+  const dates = window.ORDER_DATES || [];
+
+  // ✅ chỉ lấy ngày nằm trong khoảng chọn
+  const activeDates = dates.filter(d=>{
+    if(fromDate && d < fromDate) return false;
+    if(toDate && d > toDate) return false;
+    return true;
+  });
+
+  // ✅ lọc theo FILTERED + 岗位 + khoảng ngày
   const rows = Object.entries(ORDER_STATS || {})
     .filter(([id, v]) => {
-
       if(!allowedIds.has(id)) return false;
 
-      // lấy emp để lọc岗位
-      const emp = FILTERED.find(r => (r["ID"] || "").trim() === id) 
+      const emp = FILTERED.find(r => (r["ID"] || "").trim() === id)
                || RAW.find(r => (r["ID"] || "").trim() === id);
-
       if(!emp) return false;
 
       if(posFilter && (emp["岗位"] || "") !== posFilter) return false;
 
-      if(dateFilter && !v?.[dateFilter]) return false;
-
+      // nếu chọn khoảng ngày thì ID này phải có ít nhất 1 ngày nằm trong khoảng
+      if(activeDates.length){
+        const ok = activeDates.some(d => (v && v[d]));
+        if(!ok) return false;
+      }
       return true;
     });
-
-  const dates = window.ORDER_DATES || [];
 
   els.pageStats.innerHTML = `
     <div class="card">
@@ -1737,9 +1730,8 @@ function renderStatsPage(){
       <div class="sub">按员工 ID 汇总</div>
 
       <div class="statsFilters">
-        <select id="statsDate">
-          <option value="">全部日期</option>
-        </select>
+        <input type="date" id="statsFrom" value="${esc(fromDate)}" />
+        <input type="date" id="statsTo" value="${esc(toDate)}" />
         <select id="statsPos">
           <option value="">全部岗位</option>
         </select>
@@ -1759,10 +1751,10 @@ function renderStatsPage(){
               <th rowspan="2">入职时间</th>
               <th rowspan="2">总</th>
               <th rowspan="2">平均每天处理</th>
-              ${dates.map(d=>`<th colspan="2">${d}</th>`).join("")}
+              ${activeDates.map(d=>`<th colspan="2">${esc(d)}</th>`).join("")}
             </tr>
             <tr>
-              ${dates.map(()=>`<th>成功</th><th>驳回</th>`).join("")}
+              ${activeDates.map(()=>`<th>成功</th><th>驳回</th>`).join("")}
             </tr>
           </thead>
           <tbody>
@@ -1781,12 +1773,12 @@ function renderStatsPage(){
               const join = ACCOUNT_JOIN_DATE[id] || "-";
 
               let total = 0;
-              dates.forEach(d=>{
+              activeDates.forEach(d=>{
                 const day = v?.[d] || {success:0,reject:0};
                 total += Number(day.success || 0);
               });
 
-              const avg = dates.length ? Math.round(total / dates.length) : 0;
+              const avg = activeDates.length ? Math.round(total / activeDates.length) : 0;
 
               return `
                 <tr>
@@ -1801,11 +1793,10 @@ function renderStatsPage(){
                   <td>${total}</td>
                   <td>${avg}</td>
 
-                  ${dates.map(d=>{
+                  ${activeDates.map(d=>{
                     const day = v?.[d] || {success:0,reject:0};
                     return `<td>${day.success || 0}</td><td>${day.reject || 0}</td>`;
                   }).join("")}
-
                 </tr>
               `;
             }).join("")}
@@ -1816,13 +1807,17 @@ function renderStatsPage(){
     </div>
   `;
 
+  // ✅ populate xong rồi mới gắn lại value + onchange
   populateStatsFilters();
 
   const posSel = document.getElementById("statsPos");
   if(posSel) posSel.onchange = renderStatsPage;
 
-  const dateSel = document.getElementById("statsDate");
-  if(dateSel) dateSel.onchange = renderStatsPage;
+  const fromEl = document.getElementById("statsFrom");
+  if(fromEl) fromEl.onchange = renderStatsPage;
+
+  const toEl = document.getElementById("statsTo");
+  if(toEl) toEl.onchange = renderStatsPage;
 }
   
 load();
