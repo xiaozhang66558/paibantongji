@@ -1480,7 +1480,7 @@ async function loadAccountMap(){
       .split("/")
       .map(a=>a.trim())
       .filter(Boolean);
-    const joinDate = (r["入职时间"] || "").trim();  q
+    const joinDate = (r["入职时间"] || "").trim();  
 
     accounts.forEach(acc=>{
       ACCOUNT_MAP[acc] = id;
@@ -1638,21 +1638,12 @@ function populateStatsFilters(){
     dateSel.appendChild(opt);
   });
 }
-  const posSel = document.getElementById("statsPos");
+const posSel = document.getElementById("statsPos");
 
 if(posSel){
-
-  const poss = [...new Set(RAW.map(r=>r["岗位"]).filter(Boolean))];
-
-  posSel.innerHTML = `<option value="">全部岗位</option>`;
-
-  poss.forEach(p=>{
-    const opt = document.createElement("option");
-    opt.value = p;
-    opt.textContent = p;
-    posSel.appendChild(opt);
-  });
-
+  posSel.onchange = ()=>{
+    renderStatsPage();
+  };
 }
 
 function renderStatsPage(){
