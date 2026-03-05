@@ -1351,18 +1351,21 @@ async function load(){
 
     function populateStatsFilters(){
 
-    const dateSel = document.getElementById("statsDate");
+      const dateSel = document.getElementById("statsDate");
 
-    if(!dateSel) return;
+      if(!dateSel || !window.ORDER_DATES) return;
 
-    ORDER_DATES.forEach(d=>{
-    const opt=document.createElement("option");
-    opt.value=d;
-    opt.textContent=d;
-    dateSel.appendChild(opt);
-    });
+      dateSel.innerHTML =
+      `<option value="">全部日期</option>`;
 
-}
+      ORDER_DATES.forEach(d=>{
+        const opt=document.createElement("option");
+        opt.value=d;
+        opt.textContent=d;
+        dateSel.appendChild(opt);
+      });
+
+  }
     
     renderOrderStats();
   }catch(err){
