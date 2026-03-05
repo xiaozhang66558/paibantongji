@@ -1508,24 +1508,24 @@ async function loadAccountMap(){
 // ===============================
 
 async function loadOrderStats(){
-  const dates = new Set();
-  dates.add(r["日期"]);
 
   const res = await fetch(ORDER_API);
   const data = await res.json();
 
   const map = {};
+  const dates = new Set();
 
   const selectedDate =
   document.getElementById("statsDate")?.value;
 
   data.forEach(r=>{
 
-  if(selectedDate && r["日期"]!==selectedDate)
-  return;
+    dates.add(r["日期"]);   // phải nằm trong loop
+
+    if(selectedDate && r["日期"]!==selectedDate)
+      return;
 
     const acc = (r["后台账号"] || "").trim();
-
     const id = ACCOUNT_MAP[acc];
 
     if(!id) return;
@@ -1544,7 +1544,6 @@ async function loadOrderStats(){
 
   ORDER_STATS = map;
   window.ORDER_DATES = [...dates].sort();
-
 }
   // ===============================
 // RENDER ORDER STATS
@@ -1601,6 +1600,18 @@ function renderOrderStats(){
     .sort((a,b)=> (b[1].processed||0) - (a[1].processed||0));
 
   els.pageStats.innerHTML = `
+  setTimeout(()=>{
+
+const dateSel = document.getElementById("statsDate");
+
+if(dateSel){
+  dateSel.onchange = async ()=>{
+    await loadOrderStats();
+    renderStatsPage();
+  };
+}
+
+},0);
   <div class="card">
 
   <h2>员工订单处理统计</h2>
