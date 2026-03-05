@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>HR System (Enterprise)</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg0:#f4f7fb;
+      --bg1:#eef3fb;
+      --card:#ffffff;
+      --ink:#0f172a;
+      --muted:#64748b;
+      --line:#e6edf7;
+      --nav:#0b1220;
+      --nav2:#0f172a;
+      --accent:#2563eb;
+      --accent2:#22c55e;
+      --shadow: 0 10px 30px rgba(15,23,42,.08);
+      --shadow2: 0 6px 18px rgba(2,6,23,.08);
+      --r12:12px;
+      --r16:16px;
+      --r20:20px;
+    }
+
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      color:var(--ink);
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial;
+      background: radial-gradient(1200px 600px at 20% 0%, #eaf2ff 0%, transparent 55%),
+                  radial-gradient(1200px 600px at 90% 10%, #edf7ff 0%, transparent 55%),
+                  linear-gradient(180deg, var(--bg0), var(--bg1));
+      min-height:100vh;
+    }
+
+    header{
+      position:sticky; top:0; z-index:50;
+      background: linear-gradient(180deg, var(--nav), var(--nav2));
+      color:#fff;
+      padding:14px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      box-shadow: 0 12px 30px rgba(0,0,0,.25);
+    }
+    header .brand{
+      font-weight:800;
+      letter-spacing:.2px;
+      display:flex; gap:10px; align-items:center;
+    }
+    .badge{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:4px 10px;
+      border-radius:999px;
+      background: rgba(255,255,255,.10);
+      font-size:12px;
+      color:#e5e7eb;
+      border:1px solid rgba(255,255,255,.12);
+    }
+    .dot{width:8px;height:8px;border-radius:999px;background:var(--accent2);display:inline-block;}
+
+    .wrap{
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    /* top nav tabs */
+    .topTabs{
+      display:flex; gap:10px; flex-wrap:wrap;
+      align-items:center;
+      margin: 8px 0 14px;
+    }
+    .tab{
+      cursor:pointer;
+      user-select:none;
+      padding:10px 14px;
+      border-radius:999px;
+      background: rgba(15,23,42,.06);
+      border:1px solid rgba(15,23,42,.08);
+      font-weight:800;
+      font-size:13px;
+      color: var(--ink);
+      transition:.15s;
+    }
+    .tab:hover{ transform: translateY(-1px); box-shadow: var(--shadow2); }
+    .tab.active{
+      background: linear-gradient(180deg, #111827, #0b1220);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.10);
+    }
+
+    /* filters bar */
+    .filterBar{
+      background: rgba(255,255,255,.72);
+      border:1px solid rgba(15,23,42,.08);
+      box-shadow: var(--shadow2);
+      border-radius: 18px;
+      padding: 12px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      backdrop-filter: blur(10px);
+    }
+    .filterBar input, .filterBar select{
+      border:1px solid rgba(15,23,42,.10);
+      background:#fff;
+      border-radius:999px;
+      padding:10px 12px;
+      font-weight:700;
+      font-size:13px;
+      outline:none;
+      min-width: 180px;
+    }
+    .filterBar .meta{
+      margin-left:auto;
+      color: var(--muted);
+      font-size:12px;
+      font-weight:700;
+    }
+
+    /* cards */
+    .card{
+      background: rgba(255,255,255,.86);
+      border: 1px solid rgba(15,23,42,.08);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-top: 14px;
+      backdrop-filter: blur(12px);
+    }
+    .card h2{
+      margin:0;
+      font-size:22px;
+      letter-spacing:.2px;
+    }
+    .sub{
+      color: var(--muted);
+      font-size:13px;
+      font-weight:700;
+      margin-top:6px;
+    }
+
+    /* kpi rows */
+    .kpiRow{
+      display:grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap:12px;
+      margin-top: 14px;
+    }
+    @media (max-width:1100px){
+      .kpiRow{ grid-template-columns: repeat(2,1fr); }
+    }
+    .kpi{
+      background: #fff;
+      border: 1px solid rgba(15,23,42,.08);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 8px 20px rgba(2,6,23,.06);
+      cursor:pointer;
+      transition:.15s;
+      position:relative;
+      overflow:hidden;
+      min-height: 92px;
+    }
+    .kpi:hover{ transform: translateY(-2px); box-shadow: 0 12px 26px rgba(2,6,23,.09); }
+    .kpi .t{ font-size:12px; color:var(--muted); font-weight:900; }
+    .kpi .v{ font-size:28px; font-weight:1000; margin-top:6px; }
+    .kpi .hint{ font-size:12px; color:#64748b; font-weight:800; margin-top:8px; }
+    .kpi .spark{
+      position:absolute; right:-30px; top:-30px;
+      width:120px; height:120px;
+      border-radius:999px;
+      background: radial-gradient(circle at 40% 40%, rgba(37,99,235,.25), transparent 55%);
+      filter: blur(0px);
+    }
+
+    /* role tiles */
+    .tileGrid{
+      display:grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap:10px;
+      margin-top: 12px;
+    }
+    @media (max-width:1200px){ .tileGrid{ grid-template-columns: repeat(3,1fr);} }
+    @media (max-width:700px){ .tileGrid{ grid-template-columns: repeat(2,1fr);} }
+
+    .tile{
+      background:#fff;
+      border: 1px solid rgba(15,23,42,.08);
+      border-radius: 18px;
+      padding: 12px 12px;
+      box-shadow: 0 8px 18px rgba(2,6,23,.05);
+      cursor:pointer;
+      transition:.14s;
+      min-height: 70px;
+    }
+    .tile:hover{ transform: translateY(-2px); box-shadow: 0 12px 24px rgba(2,6,23,.09); }
+    .tile .name{ font-weight:950; font-size:13px; }
+    .tile .count{ color:var(--muted); font-weight:900; margin-top:6px; }
+
+    /* two charts row */
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:14px;
+      margin-top:14px;
+    }
+    @media(max-width:1100px){ .grid2{ grid-template-columns: 1fr; } }
+
+    .chartBox{ height: 360px; }
+    .chartBox canvas{ width:100% !important; height:100% !important; }
+
+    /* team table */
+    .tableWrap{
+      width:100%;
+      overflow:auto;
+      border-radius: 16px;
+      border:1px solid rgba(15,23,42,.08);
+      background:#fff;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:12px;
+    }
+    thead th{
+      position:sticky; top:0;
+      background: linear-gradient(180deg, #0b1220, #111827);
+      color:#fff;
+      padding:10px 10px;
+      font-weight:950;
+      letter-spacing:.2px;
+      white-space:nowrap;
+    }
+    tbody td{
+      padding:9px 10px;
+      border-bottom:1px solid #edf2f7;
+      vertical-align:top;
+    }
+    tbody tr:hover{ background: #f7fbff; }
+    .link{
+      color: var(--accent);
+      font-weight:950;
+      cursor:pointer;
+    }
+
+    /* compact table for less horizontal scroll */
+    .compact table{ font-size:11px; }
+    .compact tbody td{ padding:8px 8px; }
+
+    /* cards view (no horizontal scroll) */
+    .cardsView{
+      display:grid;
+      grid-template-columns: repeat(3,1fr);
+      gap:10px;
+    }
+    @media(max-width:1100px){ .cardsView{ grid-template-columns: repeat(2,1fr); } }
+    @media(max-width:700px){ .cardsView{ grid-template-columns: 1fr; } }
+
+    .empCard{
+      background:#fff;
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:18px;
+      box-shadow: 0 10px 24px rgba(2,6,23,.06);
+      padding:12px;
+    }
+    .empCard .row1{
+      display:flex; justify-content:space-between; gap:10px;
+      align-items:flex-start;
+    }
+    .empCard .nm{
+      font-weight:1000;
+      font-size:14px;
+      line-height:1.2;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:900;
+      border:1px solid rgba(15,23,42,.10);
+      background:#f8fafc;
+      color:#0f172a;
+      white-space:nowrap;
+    }
+    .empCard .meta{
+      margin-top:8px;
+      color: var(--muted);
+      font-weight:800;
+      font-size:12px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:6px 10px;
+    }
+    .empCard .meta div{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+    .btnRow{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin-top: 10px;
+    }
+    .btn{
+      cursor:pointer;
+      user-select:none;
+      padding:9px 12px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid rgba(15,23,42,.12);
+      font-weight:900;
+      font-size:12px;
+    }
+    .btn.primary{
+      background: linear-gradient(180deg, #2563eb, #1d4ed8);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.12);
+    }
+
+    /* modal */
+    .modal{
+      position:fixed; inset:0;
+      background: rgba(2,6,23,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:200;
+      padding: 18px;
+    }
+    .modal .box{
+      width: min(1400px, 98vw);
+      max-height: 92vh;
+      overflow:auto;
+      background: rgba(255,255,255,.95);
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+      border-radius: 22px;
+      padding: 16px;
+      backdrop-filter: blur(14px);
+    }
+    .modal .head{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px;
+      position:sticky; top:0;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(12px);
+      padding: 10px 6px 12px;
+      border-bottom: 1px solid rgba(15,23,42,.08);
+      z-index:2;
+    }
+    .modal .head h3{
+      margin:0;
+      font-size:16px;
+      font-weight:1000;
+    }
+    .x{
+      cursor:pointer;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(15,23,42,.12);
+      background:#fff;
+      font-weight:1000;
+    }
+
+    /* sections visibility */
+    .page{ display:none; }
+    .page.active{ display:block; }
+
+    /* small helper text */
+    .note{
+      margin-top:8px;
+      color: var(--muted);
+      font-weight:800;
+      font-size:12px;
+    }
+
+    /* ===== FORCE CENTER ALL TEXT ===== */
+    body,
+    .card,
+    .kpi,
+    .tile,
+    .empCard,
+    .modal .box,
+    .note,
+    .sub,
+    .badge,
+    .pill,
+    .btn,
+    table,
+    thead th,
+    tbody td {
+      text-align: center !important;
+    }
+
+    /* Center flex containers */
+    header,
+    .filterBar,
+    .topTabs,
+    .kpiRow,
+    .grid2,
+    .btnRow,
+    .empCard .row1 {
+      justify-content: center !important;
+    }
+
+    /* ===== GIỮ HEADER & FILTER NHƯ CŨ ===== */
+    header{
+      justify-content: space-between !important;
+      text-align: left !important;
+    }
+
+    .filterBar{
+      justify-content: flex-start !important;
+      text-align: left !important;
+    }
+
+    .filterBar input,
+    .filterBar select{
+      text-align: left !important;
+    }
+
+    .filterBar .meta{
+      margin-left: auto !important;
+      text-align: right !important;
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="brand">
+    HR System
+    <span class="badge"><span class="dot"></span> Public view</span>
+  </div>
+  <div class="badge">Google Sheet → opensheet</div>
+</header>
+
+<div class="wrap">
+  <div class="topTabs">
+    <div class="tab active" data-page="dashboard">总汇</div>
+    <div class="tab" data-page="employees">人员</div>
+    <div class="tab" data-page="schedule">排班表</div>
+    <div class="tab" data-page="pan">盘口人数</div>
+  </div>
+
+  <div class="filterBar" id="filterBar">
+    <input id="q" placeholder="Search name / ID / team / group / position / manager / 工作内容" />
+    <select id="shiftSel"></select>
+    <select id="teamSel"></select>
+    <select id="groupSel"></select>
+    <select id="posSel"></select>
+    <select id="countrySel"></select>
+    <select id="panSel"></select>
+    <div class="meta" id="meta">Loading…</div>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="page active" id="page-dashboard"></div>
+
+  <!-- Employees -->
+  <div class="page" id="page-employees"></div>
+
+  <!-- Schedule -->
+  <div class="page" id="page-schedule"></div>
+  <div class="page" id="page-pan"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="box">
+    <div class="head">
+      <h3 id="modalTitle">Title</h3>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="btn" id="modalBack" style="display:none;">← Back</button>
+        <button class="x" id="modalClose">Close</button>
+      </div>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   CONFIG
+   ========================================================= */
+const SHEET_API = "https://opensheet.elk.sh/1e38ZBHG0B0nxODaooPhgreG67A2RLxLxrpP8Sas_vZA/填表";
+
+/*
+  Column mapping (by header names from your sheet):
+  负责人        现场培训        线上组长        线上培训        组别        团队        姓名        ID        班次        国家        岗位        盘口        工作内容
+*/
+
+let RAW = [];
+let FILTERED = [];
+
+let charts = { pos:null, team:null, shift:null };
+
+const els = {
+  pageDashboard: document.getElementById("page-dashboard"),
+  pageEmployees: document.getElementById("page-employees"),
+  pageSchedule: document.getElementById("page-schedule"),
+  pagePan: document.getElementById("page-pan"),
+
+  tabs: document.querySelectorAll(".tab"),
+
+  q: document.getElementById("q"),
+  shiftSel: document.getElementById("shiftSel"),
+  teamSel: document.getElementById("teamSel"),
+  groupSel: document.getElementById("groupSel"),
+  posSel: document.getElementById("posSel"),
+  countrySel: document.getElementById("countrySel"),
+  panSel: document.getElementById("panSel"),
+  meta: document.getElementById("meta"),
+
+  modal: document.getElementById("modal"),
+  modalTitle: document.getElementById("modalTitle"),
+  modalBody: document.getElementById("modalBody"),
+  modalClose: document.getElementById("modalClose"),
+  modalBack: document.getElementById("modalBack")
+};
+
+function s(v){ return (v ?? "").toString().trim(); }
+function norm(v){ return s(v).replace(/\s+/g," ").trim(); }
+function uniq(arr){ return [...new Set(arr.filter(Boolean))]; }
+function esc(str){
+  return (str??"").toString()
+    .replaceAll("&","&amp;").replaceAll("<","&lt;")
+    .replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+
+/* =========================================================
+   ✅ header-safe pick (chống opensheet header lệch)
+   ========================================================= */
+function pick(r, keys){
+  for(const k of keys){
+    if(Object.prototype.hasOwnProperty.call(r, k)){
+      const v = (r[k] ?? "").toString();
+      if(v.trim() !== "") return v;
+    }
+  }
+  const objKeys = Object.keys(r || {});
+  for(const want of keys){
+    const w = (want ?? "").toString().trim();
+    const found = objKeys.find(ok => ok.toString().trim() === w);
+    if(found){
+      const v = (r[found] ?? "").toString();
+      if(v.trim() !== "") return v;
+    }
+  }
+  return "";
+}
+function normPick(r, keys){ return norm(pick(r, keys)); }
+
+function isValidName(name){
+  const v = norm(name);
+  if(!v) return false;
+  const low = v.toLowerCase();
+  if(low === "null" || low === "undefined") return false;
+  if(v.replace(/\s/g,"") === "") return false;
+  return true;
+}
+
+/* =========================================================
+   NAV
+   ========================================================= */
+els.tabs.forEach(t=>{
+  t.addEventListener("click", ()=>{
+    els.tabs.forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");
+    const p = t.dataset.page;
+    document.querySelectorAll(".page").forEach(pg=>pg.classList.remove("active"));
+    document.getElementById("page-"+p).classList.add("active");
+  });
+});
+
+/* =========================================================
+   MODAL + STACK NAV INSIDE MODAL
+   ========================================================= */
+let modalStack = [];
+
+function openModal(title, html){
+  els.modalTitle.textContent = title;
+  els.modalBody.innerHTML = html;
+  els.modal.style.display="flex";
+  els.modalBack.style.display = modalStack.length ? "inline-flex" : "none";
+}
+function pushModal(title, html){
+  modalStack.push({ title: els.modalTitle.textContent, html: els.modalBody.innerHTML });
+  els.modalBack.style.display = "inline-flex";
+  openModal(title, html);
+}
+function closeModal(){
+  els.modal.style.display="none";
+  els.modalBody.innerHTML="";
+  els.modalTitle.textContent="";
+  modalStack = [];
+  els.modalBack.style.display = "none";
+}
+els.modalClose.onclick = closeModal;
+els.modal.onclick = (e)=>{ if(e.target === els.modal) closeModal(); };
+els.modalBack.onclick = ()=>{
+  const prev = modalStack.pop();
+  if(!prev){ els.modalBack.style.display="none"; return; }
+  openModal(prev.title, prev.html);
+  els.modalBack.style.display = modalStack.length ? "inline-flex" : "none";
+};
+
+/* =========================================================
+   FILTERS
+   ========================================================= */
+function buildSelectOptions(selectEl, items, labelAll){
+  const opts = [`<option value="">${esc(labelAll)}</option>`]
+    .concat(items.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`));
+  selectEl.innerHTML = opts.join("");
+}
+
+function applyFilters(){
+  const q = norm(els.q.value).toLowerCase();
+  const shift = els.shiftSel.value;
+  const team  = els.teamSel.value;
+  const group = els.groupSel.value;
+  const pos   = els.posSel.value;
+  const country = els.countrySel.value;
+  const pan   = els.panSel.value;
+
+  FILTERED = RAW.filter(r=>{
+    const 姓名 = norm(r["姓名"]);
+    const ID = norm(r["ID"]);
+    const 团队 = norm(r["团队"]);
+    const 组别 = norm(r["组别"]);
+    const 岗位 = norm(r["岗位"]);
+    const 班次 = norm(r["班次"]);
+    const 盘口 = norm(r["盘口"]);
+    const 国家 = norm(r["国家"]);
+    const 工作内容 = norm(r["工作内容"]);
+
+    if(shift && 班次 !== shift) return false;
+    if(team && 团队 !== team) return false;
+    if(group && 组别 !== group) return false;
+    if(pos && 岗位 !== pos) return false;
+    if(country && 国家 !== country) return false;
+    if(pan && 盘口 !== pan) return false;
+
+    if(q){
+      const hay = [
+        姓名, ID, 团队, 组别, 岗位, 班次, 盘口, 国家, 工作内容
+      ].join(" ").toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  els.meta.textContent =
+    `Rows: ${RAW.length} • Filtered: ${FILTERED.length} • ${new Date().toLocaleString()}`;
+
+  renderDashboard();
+  renderEmployees();
+  renderSchedule();
+  renderPanPage();
+}
+
+["input","change"].forEach(evt=>{
+  els.q.addEventListener(evt, applyFilters);
+  els.shiftSel.addEventListener(evt, applyFilters);
+  els.teamSel.addEventListener(evt, applyFilters);
+  els.groupSel.addEventListener(evt, applyFilters);
+  els.posSel.addEventListener(evt, applyFilters);
+  els.countrySel.addEventListener(evt, applyFilters);
+  els.panSel.addEventListener(evt, applyFilters);
+});
+
+/* =========================================================
+   STATS HELPERS
+   ========================================================= */
+function getTotalPeopleSet(rows){
+  const set = new Set();
+  rows.forEach(r=>{
+    const name = norm(r["姓名"]);
+    if(isValidName(name)){
+      set.add(name);
+    }
+  });
+  return set;
+}
+
+function getUniqueSetByField(rows, field){
+  const set = new Set();
+  rows.forEach(r=>{
+    const v = norm(r[field]);
+    if(v) set.add(v);
+  });
+  return set;
+}
+
+function groupBy(rows, field, emptyLabel="未填写"){
+  const m = new Map();
+  rows.forEach(r=>{
+    const k = norm(r[field]) || emptyLabel;
+    if(!m.has(k)) m.set(k, []);
+    m.get(k).push(r);
+  });
+  return m;
+}
+
+function countByUniqueName(rows){
+  const set = new Set();
+  rows.forEach(r=>{
+    const name = norm(r["姓名"]);
+    if(isValidName(name)) set.add(name);
+  });
+  return set.size;
+}
+
+/* =========================================================
+   MODAL TABLE RENDER
+   ✅ ADD: 工作内容 (显示在 盘口 后面)
+   ========================================================= */
+function renderFullTable(rows, titleHint=""){
+  const cols = ["负责人","现场培训","线上组长","线上培训","组别","团队","班次","岗位","姓名","ID","国家","盘口","工作内容"];
+  return `
+    <div class="note">${esc(titleHint)}  Rows: <b>${rows.length.toLocaleString()}</b></div>
+    <div class="tableWrap">
+      <table>
+        <thead>
+          <tr>${cols.map(c=>`<th>${esc(c)}</th>`).join("")}</tr>
+        </thead>
+        <tbody>
+          ${rows.map(r=>`
+            <tr>
+              ${cols.map(c=>`<td>${esc(norm(r[c]))}</td>`).join("")}
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+/* =========================================================
+   MANAGER → SUBORDINATES
+   ========================================================= */
+function openManagerList(fieldLabel, rows){
+  const set = getUniqueSetByField(rows, fieldLabel);
+  const names = [...set].sort((a,b)=>a.localeCompare(b,"zh"));
+  const html = `
+    <div class="note">点击名字 → 查看该 ${esc(fieldLabel)} 管理的员工（从表里匹配同名字段）。</div>
+    <div class="tileGrid">
+      ${names.map(n=>{
+        const subs = rows.filter(r=>norm(r[fieldLabel])===n);
+        const c = countByUniqueName(subs);
+        return `
+          <div class="tile" onclick="openManagerSubs('${esc(fieldLabel)}','${esc(n)}')">
+            <div class="name">${esc(n)}</div>
+            <div class="count">下属: ${c}</div>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+  openModal(`${fieldLabel} 名单（${names.length}）`, html);
+}
+
+window.openManagerSubs = function(fieldLabel, managerName){
+  const subs = FILTERED.filter(r=>norm(r[fieldLabel])===managerName);
+  pushModal(`${fieldLabel}：${managerName}（下属 ${countByUniqueName(subs)}）`, renderFullTable(subs, `${fieldLabel} = ${managerName}`));
+};
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
+function renderDashboard(){
+  const rows = FILTERED;
+
+  const totalPeopleSet = getTotalPeopleSet(rows);
+  const totalPeople = totalPeopleSet.size;
+
+  const ownerSet  = getUniqueSetByField(rows,"负责人");
+  const onsiteSet = getUniqueSetByField(rows,"现场培训");
+  const leaderSet = getUniqueSetByField(rows,"线上组长");
+  const trainSet  = getUniqueSetByField(rows,"线上培训");
+
+  const posMap = groupBy(rows,"岗位");
+  const posLabels = [...posMap.keys()];
+  const posCounts = posLabels.map(k=>countByUniqueName(posMap.get(k)));
+
+  const teamMap = groupBy(rows,"团队");
+  const teamLabels = [...teamMap.keys()];
+  const teamCounts = teamLabels.map(k=>countByUniqueName(teamMap.get(k)));
+
+  const allPositions = uniq(rows.map(r=>norm(r["岗位"])||"未填写")).sort((a,b)=>a.localeCompare(b,"zh"));
+
+  const teamRows = [...teamMap.entries()]
+    .map(([team, list])=>{
+      const total = countByUniqueName(list);
+
+      const byPosSet = new Map();
+      allPositions.forEach(p=>byPosSet.set(p, new Set()));
+
+      list.forEach(r=>{
+        const p = norm(r["岗位"])||"未填写";
+        const nm = norm(r["姓名"]);
+        if(isValidName(nm)) byPosSet.get(p).add(nm);
+      });
+
+      const byPosFinal = allPositions.map(p=>byPosSet.get(p).size);
+
+      return { team, list, total, byPosFinal };
+    })
+    .sort((a,b)=>b.total-a.total);
+
+  els.pageDashboard.innerHTML = `
+    <div class="card">
+      <h2>统计总览</h2>
+      <div class="sub">按岗位 & 团队统计（点击卡片/图表可弹窗查看员工名单）</div>
+
+      <div class="kpiRow">
+        <div class="kpi" onclick="openModal('总人数名单（去重逻辑：仅姓名）', renderFullTable(FILTERED,'去重统计不影响名单展示：这里展示筛选后的所有原始行'))">
+          <div class="spark"></div>
+          <div class="t">总人数（去重）</div>
+          <div class="v">${totalPeople.toLocaleString()}</div>
+          <div class="hint">姓名（unique）</div>
+        </div>
+
+        <div class="kpi" onclick="openManagerList('负责人', FILTERED)">
+          <div class="spark"></div>
+          <div class="t">负责人</div>
+          <div class="v">${ownerSet.size.toLocaleString()}</div>
+          <div class="hint">点击查看名单 → 再点人看下属</div>
+        </div>
+
+        <div class="kpi" onclick="openManagerList('现场培训', FILTERED)">
+          <div class="spark"></div>
+          <div class="t">现场培训</div>
+          <div class="v">${onsiteSet.size.toLocaleString()}</div>
+          <div class="hint">点击查看名单 → 再点人看下属</div>
+        </div>
+
+        <div class="kpi" onclick="openManagerList('线上组长', FILTERED)">
+          <div class="spark"></div>
+          <div class="t">线上组长</div>
+          <div class="v">${leaderSet.size.toLocaleString()}</div>
+          <div class="hint">点击查看名单 → 再点人看下属</div>
+        </div>
+
+        <div class="kpi" onclick="openManagerList('线上培训', FILTERED)">
+          <div class="spark"></div>
+          <div class="t">线上培训</div>
+          <div class="v">${trainSet.size.toLocaleString()}</div>
+          <div class="hint">点击查看名单 → 再点人看下属</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <div>
+            <div style="font-weight:1000; font-size:16px;">岗位分布</div>
+            <div class="note">点击图例或图形 → 弹出该岗位员工名单</div>
+          </div>
+          <button class="btn" onclick="openModal('岗位统计（按姓名去重）', renderTeamOrPosSummary('岗位','岗位'))">查看汇总</button>
+        </div>
+        <div class="chartBox"><canvas id="chartPos"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <div>
+            <div style="font-weight:1000; font-size:16px;">团队人数（cột F：团队）</div>
+            <div class="note">点击柱子 → 弹出该团队员工名单</div>
+          </div>
+          <button class="btn" onclick="openModal('团队统计（按姓名去重）', renderTeamOrPosSummary('团队','团队'))">查看汇总</button>
+        </div>
+        <div class="chartBox"><canvas id="chartTeam"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+        <div>
+          <div style="font-weight:1000; font-size:16px;">团队统计表（cột F）</div>
+          <div class="note">点击任意数字 → 弹窗查看对应员工名单</div>
+        </div>
+      </div>
+
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>团队</th>
+              <th>总人数</th>
+              ${allPositions.map(p=>`<th>${esc(p)}</th>`).join("")}
+            </tr>
+          </thead>
+          <tbody>
+            ${teamRows.map(tr=>{
+              const cells = tr.byPosFinal.map((n,idx)=>{
+                const pos = allPositions[idx];
+                return `<td class="link" onclick="openTeamPos('${esc(tr.team)}','${esc(pos)}')">${n}</td>`;
+              }).join("");
+              return `
+                <tr>
+                  <td class="link" onclick="openTeam('${esc(tr.team)}')">${esc(tr.team)}</td>
+                  <td class="link" onclick="openTeam('${esc(tr.team)}')">${tr.total}</td>
+                  ${cells}
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  buildPosChart(posLabels, posCounts);
+  buildTeamChart(teamLabels, teamCounts);
+}
+
+function renderTeamOrPosSummary(fieldLabel, fieldName){
+  const m = groupBy(FILTERED, fieldName);
+  const rows = [...m.entries()]
+    .map(([k,list])=>({k, c: countByUniqueName(list)}))
+    .sort((a,b)=>b.c-a.c);
+
+  return `
+    <div class="tableWrap">
+      <table>
+        <thead><tr><th>${esc(fieldLabel)}</th><th>人数（按姓名去重）</th></tr></thead>
+        <tbody>
+          ${rows.map(r=>`
+            <tr>
+              <td class="link" onclick="${fieldName==='团队' ? `openTeam('${esc(r.k)}')` : `openPos('${esc(r.k)}')`}">${esc(r.k)}</td>
+              <td>${r.c}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function buildPosChart(labels, values){
+  const ctx = document.getElementById("chartPos");
+  if(!ctx) return;
+  if(charts.pos) charts.pos.destroy();
+
+  charts.pos = new Chart(ctx, {
+    type:"doughnut",
+    data:{ labels, datasets:[{ data: values }]},
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{ position:"top", labels:{ boxWidth:18, font:{ size:11, weight:"700" } } }
+      },
+      onClick: (evt, elements)=>{
+        if(!elements?.length) return;
+        const idx = elements[0].index;
+        openPos(labels[idx]);
+      }
+    }
+  });
+}
+
+function buildTeamChart(labels, values){
+  const ctx = document.getElementById("chartTeam");
+  if(!ctx) return;
+  if(charts.team) charts.team.destroy();
+
+  charts.team = new Chart(ctx, {
+    type:"bar",
+    data:{ labels, datasets:[{ label:"人数（按姓名去重）", data: values }] },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      scales:{
+        x:{ ticks:{ font:{ size:10, weight:"700" }, maxRotation:60, minRotation:60 } },
+        y:{ ticks:{ font:{ size:10, weight:"700" } } }
+      },
+      plugins:{ legend:{ display:false } },
+      onClick: (evt, elements)=>{
+        if(!elements?.length) return;
+        const idx = elements[0].index;
+        openTeam(labels[idx]);
+      }
+    }
+  });
+}
+
+window.openPos = function(pos){
+  const rows = FILTERED.filter(r=> (norm(r["岗位"])||"未填写") === pos );
+  openModal(`${pos} 员工名单（${countByUniqueName(rows)}）`, renderFullTable(rows, `岗位 = ${pos}`));
+};
+
+window.openTeam = function(team){
+  const rows = FILTERED.filter(r=> (norm(r["团队"])||"未填写") === team );
+  openModal(`${team} 员工名单（${countByUniqueName(rows)}）`, renderFullTable(rows, `团队(cột F) = ${team}`));
+};
+
+window.openTeamPos = function(team, pos){
+  const rows = FILTERED.filter(r=> (norm(r["团队"])||"未填写")===team && (norm(r["岗位"])||"未填写")===pos );
+  openModal(`${team} · ${pos}（${countByUniqueName(rows)}）`, renderFullTable(rows, `团队 = ${team} 且 岗位 = ${pos}`));
+};
+
+window.openPan = function(pan){
+  const rows = FILTERED.filter(r=> norm(r["盘口"]) === pan);
+  openModal(`盘口：${pan}`, renderFullTable(rows, `盘口 = ${pan}`));
+};
+
+/* =========================================================
+   EMPLOYEES PAGE
+   ✅ ADD: 工作内容
+   ========================================================= */
+let empViewMode = "cards";
+
+function renderEmployees(){
+  const rows = FILTERED;
+
+  const header = `
+    <div class="card">
+      <h2>Employees</h2>
+      <div class="sub">支持筛选/搜索。默认 Cards 视图避免横向滚动。</div>
+      <div class="btnRow">
+        <button class="btn ${empViewMode==='cards'?'primary':''}" onclick="setEmpView('cards')">Cards view（不横滚）</button>
+        <button class="btn ${empViewMode==='table'?'primary':''}" onclick="setEmpView('table')">Table view（完整列）</button>
+        <button class="btn" onclick="openModal('Employees（完整表）', renderFullTable(FILTERED,'筛选后的完整员工表'))">弹窗全屏查看</button>
+      </div>
+    </div>
+  `;
+
+  let body = "";
+  if(empViewMode==="cards"){
+    body = `
+      <div class="card">
+        <div class="cardsView">
+          ${rows.map(r=>{
+            const nm = norm(r["姓名"]);
+            const pos = norm(r["岗位"])||"未填写";
+            const team = norm(r["团队"])||"未填写";
+            const grp = norm(r["组别"])||"未填写";
+            const shift = norm(r["班次"])||"";
+            const id = norm(r["ID"])||"";
+            const country = norm(r["国家"])||"";
+            const pan = norm(r["盘口"])||"";
+            const work = norm(r["工作内容"])||"";
+            const owner = norm(r["负责人"])||"";
+            const onsite = norm(r["现场培训"])||"";
+            const leader = norm(r["线上组长"])||"";
+            const trainer = norm(r["线上培训"])||"";
+            return `
+              <div class="empCard">
+                <div class="row1">
+                  <div>
+                    <div class="nm">${esc(nm||"(未填写姓名)")}</div>
+                    <div style="margin-top:6px; display:flex; gap:8px; flex-wrap:wrap;">
+                      <span class="pill">${esc(pos)}</span>
+                      <span class="pill">团队: ${esc(team)}</span>
+                      <span class="pill">组别: ${esc(grp)}</span>
+                      ${shift ? `<span class="pill">班次: ${esc(shift)}</span>` : ``}
+                    </div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div class="pill">${esc(id||"No ID")}</div>
+                    <div style="margin-top:8px; color:var(--muted); font-weight:900; font-size:12px;">${esc(country)}</div>
+                  </div>
+                </div>
+                <div class="meta">
+                  <div>负责人: <span class="link" onclick="openManagerSubs('负责人','${esc(owner)}')">${esc(owner||"-")}</span></div>
+                  <div>现场培训: <span class="link" onclick="openManagerSubs('现场培训','${esc(onsite)}')">${esc(onsite||"-")}</span></div>
+                  <div>线上组长: <span class="link" onclick="openManagerSubs('线上组长','${esc(leader)}')">${esc(leader||"-")}</span></div>
+                  <div>线上培训: <span class="link" onclick="openManagerSubs('线上培训','${esc(trainer)}')">${esc(trainer||"-")}</span></div>
+                  <div style="grid-column:1 / -1;">盘口: ${esc(pan||"-")}</div>
+                  <div style="grid-column:1 / -1;">工作内容: ${esc(work||"-")}</div>
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      </div>
+    `;
+  }else{
+    body = `
+      <div class="card compact">
+        <div class="tableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th>姓名</th><th>ID</th><th>岗位</th><th>团队</th><th>组别</th><th>班次</th>
+                <th>负责人</th><th>现场培训</th><th>线上组长</th><th>线上培训</th><th>国家</th><th>盘口</th><th>工作内容</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map(r=>{
+                const owner = norm(r["负责人"]);
+                const onsite = norm(r["现场培训"]);
+                const leader = norm(r["线上组长"]);
+                const trainer = norm(r["线上培训"]);
+                return `
+                  <tr>
+                    <td>${esc(norm(r["姓名"]))}</td>
+                    <td>${esc(norm(r["ID"]))}</td>
+                    <td class="link" onclick="openPos('${esc(norm(r["岗位"])||"未填写")}')">${esc(norm(r["岗位"])||"未填写")}</td>
+                    <td class="link" onclick="openTeam('${esc(norm(r["团队"])||"未填写")}')">${esc(norm(r["团队"])||"未填写")}</td>
+                    <td>${esc(norm(r["组别"]))}</td>
+                    <td>${esc(norm(r["班次"]))}</td>
+                    <td class="link" onclick="openManagerSubs('负责人','${esc(owner)}')">${esc(owner)}</td>
+                    <td class="link" onclick="openManagerSubs('现场培训','${esc(onsite)}')">${esc(onsite)}</td>
+                    <td class="link" onclick="openManagerSubs('线上组长','${esc(leader)}')">${esc(leader)}</td>
+                    <td class="link" onclick="openManagerSubs('线上培训','${esc(trainer)}')">${esc(trainer)}</td>
+                    <td>${esc(norm(r["国家"]))}</td>
+                    <td>${esc(norm(r["盘口"]))}</td>
+                    <td>${esc(norm(r["工作内容"]))}</td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  els.pageEmployees.innerHTML = header + body;
+}
+
+window.setEmpView = function(mode){
+  empViewMode = mode;
+  renderEmployees();
+};
+
+/* =========================================================
+   SCHEDULE PAGE（排班表）
+   ✅ ADD: 工作内容 (在 盘口 后面)
+   ========================================================= */
+function renderSchedule(){
+  const rows = RAW.filter(r => isValidName(r["姓名"]));
+
+  const rowsWithShift = rows.filter(r => norm(r["班次"]) !== "");
+  const rowsNoShift   = rows.filter(r => norm(r["班次"]) === "");
+
+  const shiftMap = groupBy(rowsWithShift, "班次", "");
+  const shiftLabels = [...shiftMap.keys()].filter(k=>k!=="");
+  const shiftCounts = shiftLabels.map(k=>countByUniqueName(shiftMap.get(k)));
+
+  const shiftCards = shiftLabels
+    .map((k,idx)=>({k, c: shiftCounts[idx]}))
+    .sort((a,b)=>b.c-a.c)
+    .map(x=>`
+      <div class="kpi" style="min-height:86px" onclick="openShift('${esc(x.k)}')">
+        <div class="spark"></div>
+        <div class="t">班次</div>
+        <div class="v" style="font-size:24px">${esc(x.k)}</div>
+        <div class="hint">${x.c} 人（按姓名去重）</div>
+      </div>
+    `).join("");
+
+  const noShiftUnique = countByUniqueName(rowsNoShift);
+
+  els.pageSchedule.innerHTML = `
+    <div class="card">
+      <h2>排班表</h2>
+      <div class="sub">按班次统计（班次来自 Google Sheet）。✅ 已修复：空班次不再显示为“班次: 未填写”。</div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:1000; font-size:16px;">班次统计（只统计有班次的行）</div>
+      <div class="note">你说 “中班会有多个时间段”，所以必须从 班次 取 unique；这里已按你要求。</div>
+
+      <div class="kpiRow" style="grid-template-columns:repeat(3,1fr)">
+        ${shiftCards || `<div class="note">没有找到任何班次数据（全部为空或被筛选掉）</div>`}
+        <div class="kpi" style="min-height:86px" onclick="openNoShift()">
+          <div class="spark"></div>
+          <div class="t">未填写班次</div>
+          <div class="v" style="font-size:24px">${noShiftUnique.toLocaleString()}</div>
+          <div class="hint">按姓名去重（点击查看名单）</div>
+        </div>
+      </div>
+
+      <div class="chartBox" style="margin-top:14px"><canvas id="chartShift"></canvas></div>
+    </div>
+
+    <div class="card compact">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+        <div>
+          <div style="font-weight:1000; font-size:16px;">排班明细（全部人员，不限制 18）</div>
+          <div class="note">如果你不想横向滚动：建议用 Employees 的 Cards view；这里提供 compact table 看更多行。</div>
+        </div>
+        <button class="btn" onclick="openModal('排班明细（弹窗全屏）', renderFullTable(FILTERED,'排班明细：筛选后的所有行'))">弹窗全屏查看</button>
+      </div>
+
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>负责人</th><th>现场培训</th><th>线上组长</th><th>线上培训</th>
+              <th>团队</th><th>组别</th><th>班次</th><th>岗位</th><th>姓名</th><th>ID</th><th>国家</th><th>盘口</th><th>工作内容</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r=>{
+              const owner = norm(r["负责人"]);
+              const onsite = norm(r["现场培训"]);
+              const leader = norm(r["线上组长"]);
+              const trainer = norm(r["线上培训"]);
+              return `
+                <tr>
+                  <td class="link" onclick="openManagerSubs('负责人','${esc(owner)}')">${esc(owner)}</td>
+                  <td class="link" onclick="openManagerSubs('现场培训','${esc(onsite)}')">${esc(onsite)}</td>
+                  <td class="link" onclick="openManagerSubs('线上组长','${esc(leader)}')">${esc(leader)}</td>
+                  <td class="link" onclick="openManagerSubs('线上培训','${esc(trainer)}')">${esc(trainer)}</td>
+                  <td class="link" onclick="openTeam('${esc(norm(r["团队"])||"未填写")}')">${esc(norm(r["团队"])||"未填写")}</td>
+                  <td>${esc(norm(r["组别"]))}</td>
+                  <td>${esc(norm(r["班次"]))}</td>
+                  <td class="link" onclick="openPos('${esc(norm(r["岗位"])||"未填写")}')">${esc(norm(r["岗位"])||"未填写")}</td>
+                  <td>${esc(norm(r["姓名"]))}</td>
+                  <td>${esc(norm(r["ID"]))}</td>
+                  <td>${esc(norm(r["国家"]))}</td>
+                  <td>${esc(norm(r["盘口"]))}</td>
+                  <td>${esc(norm(r["工作内容"]))}</td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  buildShiftChart(shiftLabels, shiftCounts);
+}
+
+window.openShift = function(shift){
+  const rows = FILTERED.filter(r=> norm(r["班次"]) === shift);
+  openModal(`班次：${shift}（${countByUniqueName(rows)}）`, renderFullTable(rows, `班次 = ${shift}`));
+};
+
+window.openNoShift = function(){
+  const rows = FILTERED.filter(r=> norm(r["班次"]) === "");
+  openModal(`未填写班次（${countByUniqueName(rows)}）`, renderFullTable(rows, `班次 为空`));
+};
+
+function buildShiftChart(labels, values){
+  const ctx = document.getElementById("chartShift");
+  if(!ctx) return;
+  if(charts.shift) charts.shift.destroy();
+
+  charts.shift = new Chart(ctx, {
+    type:"bar",
+    data:{ labels, datasets:[{ label:"人数（按姓名去重）", data: values }] },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{
+        x:{ ticks:{ font:{ size:10, weight:"700" }, maxRotation:45, minRotation:45 } },
+        y:{ ticks:{ font:{ size:10, weight:"700" } } }
+      },
+      onClick: (evt, elements)=>{
+        if(!elements?.length) return;
+        const idx = elements[0].index;
+        openShift(labels[idx]);
+      }
+    }
+  });
+}
+
+/* =========================================================
+   LOAD
+   ✅ ADD: 工作内容
+   ========================================================= */
+async function load(){
+  try{
+    els.meta.textContent = "Loading data from Google Sheet…";
+
+    const res = await fetch(SHEET_API, { cache:"no-store" });
+    if(!res.ok) throw new Error("Fetch failed: " + res.status);
+
+    const data = await res.json();
+    if(!Array.isArray(data)) throw new Error("Sheet JSON is not array");
+
+    RAW = data
+      .map(r=>({
+        "负责人":   normPick(r, ["负责人","負責人","Owner","owner"]),
+        "现场培训": normPick(r, ["现场培训","現場培訓","Onsite Training","现场训","現場訓練"]),
+        "线上组长": normPick(r, ["线上组长","線上組長","Online Leader","组长","組長"]),
+        "线上培训": normPick(r, ["线上培训","線上培訓","Online Training","线上训","線上訓練"]),
+        "组别":     normPick(r, ["组别","組別","Group","group"]),
+        "团队":     normPick(r, ["团队","團隊","Team","team"]),
+        "姓名":     normPick(r, ["姓名","员工姓名","員工姓名","Name","name"]),
+        "ID":       normPick(r, ["ID","Id","员工ID","員工ID"]),
+        "班次":     normPick(r, ["班次","Shift","shift","班 次","班次 "]),
+        "盘口":     normPick(r, ["盘口","盤口","ID WORKFOLIO","Workfolio","workfolio","盘口ID","盘口ID "]),
+        "工作内容": normPick(r, ["工作内容","工作內容","工作內容 ","工作","内容","內容","Work Content","Job Content","Content","工作内容/内容"]),
+        "国家":     normPick(r, ["国家","國家","Country","country"]),
+        "岗位":     normPick(r, ["岗位","崗位","Position","position"])
+      }))
+      .filter(r => isValidName(r["姓名"]));
+
+    const shifts = uniq(RAW.map(r=>r["班次"]).filter(Boolean)).sort((a,b)=>a.localeCompare(b,"zh"));
+    const teams  = uniq(RAW.map(r=>r["团队"]).filter(Boolean)).sort((a,b)=>a.localeCompare(b,"zh"));
+    const groups = uniq(RAW.map(r=>r["组别"]).filter(Boolean)).sort((a,b)=>a.localeCompare(b,"zh"));
+    const poss   = uniq(RAW.map(r=>r["岗位"]).filter(Boolean)).sort((a,b)=>a.localeCompare(b,"zh"));
+    const countries = uniq(RAW.map(r=>r["国家"]).filter(Boolean)).sort((a,b)=>a.localeCompare(b,"zh"));
+    const pans   = uniq(RAW.map(r=>r["盘口"]).filter(Boolean)).sort((a,b)=>a.localeCompare(b,"zh"));
+
+    buildSelectOptions(els.panSel, pans, "All 盘口（盘口）");
+    buildSelectOptions(els.shiftSel, shifts, "All shifts（班次）");
+    buildSelectOptions(els.teamSel, teams, "All teams（团队）");
+    buildSelectOptions(els.groupSel, groups, "All groups（组别）");
+    buildSelectOptions(els.countrySel, countries, "All 国家（国家）");
+    buildSelectOptions(els.posSel, poss, "All positions（岗位）");
+
+    applyFilters();
+  }catch(err){
+    console.error(err);
+    els.meta.textContent = "Load error: " + (err?.message || err);
+    els.pageDashboard.innerHTML = `
+      <div class="card">
+        <h2>Sheet Load Error</h2>
+        <div class="note">${esc(err?.message || String(err))}</div>
+      </div>
+    `;
+  }
+}
+
+/* =========================================================
+   PAN PAGE
+   (逻辑不变)
+   ========================================================= */
+function renderPanPage(){
+  const rows = FILTERED;
+
+  const panMap = new Map();
+  const totalSet = new Set();
+
+  rows.forEach(r=>{
+    const pan = norm(r["盘口"]) || "未填写";
+    const shift = norm(r["班次"]);
+    const pos = norm(r["岗位"]);
+    const name = norm(r["姓名"]);
+
+    if(!isValidName(name)) return;
+
+    totalSet.add(name);
+
+    if(!panMap.has(pan)){
+      panMap.set(pan,{
+        names: new Set(),
+        day: new Set(),
+        night: new Set(),
+        mid: new Set(),
+        posMap: new Map()
+      });
+    }
+
+    const obj = panMap.get(pan);
+    obj.names.add(name);
+
+    if(shift.includes("Day")) obj.day.add(name);
+    if(shift.includes("Night")) obj.night.add(name);
+    if(shift.includes("中")) obj.mid.add(name);
+
+    if(!obj.posMap.has(pos)) obj.posMap.set(pos,new Set());
+    obj.posMap.get(pos).add(name);
+  });
+
+  const grandTotal = totalSet.size;
+
+  const list = [...panMap.entries()]
+    .map(([pan,data])=>{
+      return {
+        pan,
+        total: data.names.size,
+        day: data.day.size,
+        night: data.night.size,
+        mid: data.mid.size,
+        percent: grandTotal ? ((data.names.size/grandTotal)*100).toFixed(2) : 0,
+        posDetail: [...data.posMap.entries()]
+          .map(([k,v])=>({pos:k,count:v.size}))
+          .sort((a,b)=>b.count-a.count)
+      };
+    })
+    .sort((a,b)=>b.total-a.total);
+
+  els.pagePan.innerHTML = `
+    <div class="card">
+      <h2>盘口人数统计</h2>
+      <div class="sub">总人数：${grandTotal}（按姓名去重）</div>
+    </div>
+
+    <div class="card">
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>盘口</th>
+              <th>总人数</th>
+              <th>占比</th>
+              <th>白班</th>
+              <th>夜班</th>
+              <th>中班</th>
+              <th>岗位分布</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${list.map((r,i)=>`
+              <tr style="${i<3?'background:#f0f7ff;font-weight:700':''}">
+                <td>#${i+1}</td>
+                <td class="link" onclick="openPan('${esc(r.pan)}')">${esc(r.pan)}</td>
+                <td>${r.total}</td>
+                <td>${r.percent}%</td>
+                <td>${r.day}</td>
+                <td>${r.night}</td>
+                <td>${r.mid}</td>
+                <td>
+                  ${r.posDetail.map(p=>`${esc(p.pos)}: ${p.count}`).join("<br>")}
+                </td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+load();
+</script>
+</body>
+</html>
