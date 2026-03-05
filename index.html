@@ -1347,8 +1347,8 @@ async function load(){
     buildSelectOptions(els.posSel, poss, "All positions（岗位）");
 
     applyFilters();
-    renderStatsPage();
     populateStatsFilters();
+    renderStatsPage();
     
   }catch(err){
     console.error(err);
@@ -1501,15 +1501,11 @@ async function loadOrderStats(){
   const map = {};
   const dates = new Set();
 
-  const selectedDate =
-  document.getElementById("statsDate")?.value;
 
   data.forEach(r=>{
 
     dates.add(r["日期"]);   // phải nằm trong loop
 
-    if(selectedDate && r["日期"]!==selectedDate)
-      return;
 
     const acc = (r["后台账号"] || "").trim();
     const id = ACCOUNT_MAP[acc];
@@ -1541,8 +1537,15 @@ async function loadOrderStats(){
 
 function renderOrderStats(){
 
+  const dates = window.ORDER_DATES || [];   // thêm dòng này
+
   const rows = Object.entries(ORDER_STATS)
-    .sort((a,b)=>b[1].processed - a[1].processed);
+    .sort((a,b)=>{
+  const sum = obj => Object.values(obj)
+    .reduce((t,d)=>t+(d.success||0)+(d.reject||0),0);
+
+  return sum(b[1]) - sum(a[1]);
+});
 
   const html = `
   <div class="card">
@@ -1627,38 +1630,65 @@ function renderOrderStats(){
 // STATS PAGE
 // ===============================
 function populateStatsFilters(){
+
   const dateSel = document.getElementById("statsDate");
-  if(!dateSel || !window.ORDER_DATES) return;
+  const posSel = document.getElementById("statsPos");
 
-  dateSel.innerHTML = `<option value="">全部日期</option>`;
-  window.ORDER_DATES.forEach(d=>{
-    const opt = document.createElement("option");
-    opt.value = d;
-    opt.textContent = d;
-    dateSel.appendChild(opt);
-  });
-}
-const posSel = document.getElementById("statsPos");
+  if(dateSel && window.ORDER_DATES){
 
-if(posSel){
-  posSel.onchange = ()=>{
-    renderStatsPage();
-  };
+    dateSel.innerHTML = `<option value="">全部日期</option>`;
+
+    window.ORDER_DATES.forEach(d=>{
+      const opt = document.createElement("option");
+      opt.value = d;
+      opt.textContent = d;
+      dateSel.appendChild(opt);
+    });
+
+  }
+
+  if(posSel){
+
+    const poss = [...new Set(RAW.map(r=>r["岗位"]).filter(Boolean))];
+
+    posSel.innerHTML = `<option value="">全部岗位</option>`;
+
+    poss.forEach(p=>{
+      const opt = document.createElement("option");
+      opt.value = p;
+      opt.textContent = p;
+      posSel.appendChild(opt);
+    });
+
+    posSel.onchange = ()=>{
+      renderStatsPage();
+    };
+
+  }
+
 }
+
 
 function renderStatsPage(){
 
-  const posFilter =
+const posFilter =
 document.getElementById("statsPos")?.value || "";
 
+const dateFilter =
+document.getElementById("statsDate")?.value || "";
+
 const rows = Object.entries(ORDER_STATS || {})
-.filter(([id])=>{
+.filter(([id,v])=>{
 
   const emp = RAW.find(r=>r["ID"]===id);
   if(!emp) return false;
 
   if(posFilter && emp["岗位"] !== posFilter)
     return false;
+
+  if(dateFilter){
+    if(!v[dateFilter]) return false;
+  }
 
   return true;
 
@@ -1747,30 +1777,24 @@ const rows = Object.entries(ORDER_STATS || {})
     </div>
   `;
 
-  populateStatsFilters();
+    populateStatsFilters();
 
   const posSel = document.getElementById("statsPos");
-
   if(posSel){
     posSel.onchange = ()=>{
       renderStatsPage();
     };
   }
+
+  const dateSel = document.getElementById("statsDate");
+  if(dateSel){
+    dateSel.onchange = ()=>{
+      renderStatsPage();
+    };
+  }
+
 }
-const posSel = document.getElementById("statsPos");
-
-if(posSel){
-  const poss = [...new Set(RAW.map(r=>r["岗位"]).filter(Boolean))];
-
-  posSel.innerHTML = `<option value="">全部岗位</option>`;
-
-  poss.forEach(p=>{
-    const opt = document.createElement("option");
-    opt.value = p;
-    opt.textContent = p;
-    posSel.appendChild(opt);
-  });
-}
+  
 load();
 </script>
 </body>
