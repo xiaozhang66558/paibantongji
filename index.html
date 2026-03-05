@@ -1603,68 +1603,62 @@ function renderOrderStats(){
     .sort((a,b)=> (b[1].processed||0) - (a[1].processed||0));
 
   els.pageStats.innerHTML = `
-  setTimeout(()=>{
-
-const dateSel = document.getElementById("statsDate");
-
-if(dateSel){
-  dateSel.onchange = async ()=>{
-    await loadOrderStats();
-    renderStatsPage();
-  };
-}
-
-},0);
   <div class="card">
 
-  <h2>员工订单处理统计</h2>
-  <div class="sub">按员工 ID 汇总</div>
+    <h2>员工订单处理统计</h2>
+    <div class="sub">按员工 ID 汇总</div>
 
-  <div class="statsFilters">
+    <div class="statsFilters">
 
-  <select id="statsDate">
-  <option value="">全部日期</option>
-  </select>
+      <select id="statsDate">
+        <option value="">全部日期</option>
+      </select>
 
-  <select id="statsPos">
-  <option value="">全部岗位</option>
-  </select>
-
-  </div>
-
-  <div class="tableWrap">
-  <table>
-
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>已处理</th>
-              <th>失败</th>
-            </tr>
-          </thead>
-
-          <tbody>
-
-            ${rows.map(([id,v])=>`
-              <tr>
-                <td>${id}</td>
-                <td>${v.processed}</td>
-                <td>${v.failed}</td>
-              </tr>
-            `).join("")}
-
-          </tbody>
-
-        </table>
-      </div>
+      <select id="statsPos">
+        <option value="">全部岗位</option>
+      </select>
 
     </div>
+
+    <div class="tableWrap">
+      <table>
+
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>已处理</th>
+            <th>失败</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${rows.map(([id,v])=>`
+            <tr>
+              <td>${id}</td>
+              <td>${v.processed}</td>
+              <td>${v.failed}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+
+      </table>
+    </div>
+
+  </div>
   `;
+
+  populateStatsFilters();
+
+  const dateSel = document.getElementById("statsDate");
+
+  if(dateSel){
+    dateSel.onchange = async ()=>{
+      await loadOrderStats();
+      renderStatsPage();
+    };
+  }
+
 }
-  document.getElementById("statsDate").onchange = () => {
-loadOrderStats();
-renderStatsPage();
-};
 
 load();
 </script>
