@@ -1553,26 +1553,23 @@ function renderOrderStats(){
       <table>
 
         <thead>
-
         <tr>
-        <th rowspan="2">ID</th>
-        <th rowspan="2">姓名</th>
-        <th rowspan="2">班次</th>
-        <th rowspan="2">国家</th>
-        <th rowspan="2">岗位</th>
-        <th rowspan="2">盘口</th>
-
-        ${dates.map(d=>`<th colspan="2">${d}</th>`).join("")}
-
+          <th>ID</th>
+          <th>姓名</th>
+          <th>班次</th>
+          <th>国家</th>
+          <th>岗位</th>
+          <th>盘口</th>
+          ${dates.map(d=>`<th colspan="2">${d}</th>`).join("")}
         </tr>
 
         <tr>
-        ${dates.map(()=>`
-        <th>成功</th>
-        <th>驳回</th>
-        `).join("")}
+          <th colspan="6"></th>
+          ${dates.map(()=>`
+            <th>成功</th>
+            <th>驳回</th>
+          `).join("")}
         </tr>
-
         </thead>
 
         <tbody>
@@ -1724,7 +1721,20 @@ function renderStatsPage(){
     };
   }
 }
+const posSel = document.getElementById("statsPos");
 
+if(posSel){
+  const poss = [...new Set(RAW.map(r=>r["岗位"]).filter(Boolean))];
+
+  posSel.innerHTML = `<option value="">全部岗位</option>`;
+
+  poss.forEach(p=>{
+    const opt = document.createElement("option");
+    opt.value = p;
+    opt.textContent = p;
+    posSel.appendChild(opt);
+  });
+}
 load();
 </script>
 </body>
