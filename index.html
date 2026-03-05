@@ -570,42 +570,33 @@ const els = {
 function s(v){ return (v ?? "").toString().trim(); }
 function norm(v){ return s(v).replace(/\s+/g," ").trim(); }
 function uniq(arr){ return [...new Set(arr.filter(Boolean))]; }
-function esc(str){
 function normDateISO(v){
   const str = (v ?? "").toString().trim();
   if(!str) return "";
-
-  // đã là ISO YYYY-MM-DD
   if(/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
 
-  // YYYY/MM/DD
   let m = str.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})$/);
   if(m){
-    const y = m[1];
-    const mm = String(parseInt(m[2],10)).padStart(2,"0");
-    const dd = String(parseInt(m[3],10)).padStart(2,"0");
+    const y=m[1], mm=String(+m[2]).padStart(2,"0"), dd=String(+m[3]).padStart(2,"0");
     return `${y}-${mm}-${dd}`;
   }
 
-  // D/M/YYYY hoặc M/D/YYYY  (ví dụ: 2/3/2026)
   m = str.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
   if(m){
-    let a = parseInt(m[1],10);
-    let b = parseInt(m[2],10);
-    const y = m[3];
-
+    let a=+m[1], b=+m[2], y=m[3];
     let day, month;
-
-    if(a > 12){ day = a; month = b; }
-    else if(b > 12){ month = a; day = b; }
-    else { day = a; month = b; }
-
-    const mm = String(month).padStart(2,"0");
-    const dd = String(day).padStart(2,"0");
-    return `${y}-${mm}-${dd}`;
+    if(a>12){ day=a; month=b; }
+    else if(b>12){ month=a; day=b; }
+    else { day=a; month=b; } // mặc định D/M/YYYY
+    return `${y}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
   }
-
   return str;
+}
+
+function esc(str){
+  return (str??"").toString()
+    .replaceAll("&","&amp;").replaceAll("<","&lt;")
+    .replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
 }
   return (str??"").toString()
     .replaceAll("&","&amp;").replaceAll("<","&lt;")
@@ -1555,35 +1546,34 @@ async function loadAccountMap(){
 // ===============================
 
 async function loadOrderStats(){
-
   const res = await fetch(ORDER_API);
   const data = await res.json();
 
   const map = {};
   const dates = new Set();
 
-
   data.forEach(r=>{
-
-    dates.add(date);  // phải nằm trong loop
-
-
     const acc = (r["后台账号"] || "").trim();
     const id = ACCOUNT_MAP[acc];
-
     if(!id) return;
 
-    const date = normDateISO(r["日期"]);
+    const date = normDateISO(r["日期"]);   // ✅ tạo date trước
+    if(!date) return;
+
+    dates.add(date);                       // ✅ add sau khi có date
 
     if(!map[id]) map[id] = {};
-
     if(!map[id][date]){
-      map[id][date] = {
-        success:0,
-        reject:0
-      };
+      map[id][date] = { success:0, reject:0 };
     }
 
+    map[id][date].success += Number(r["已处理"] || 0);
+    map[id][date].reject  += Number(r["已收回/已提交"] || 0);
+  });
+
+  ORDER_STATS = map;
+  window.ORDER_DATES = [...dates].sort();
+}
     map[id][date].success += Number(r["已处理"] || 0);
     map[id][date].reject += Number(r["已收回/已提交"] || 0);
 
@@ -1667,15 +1657,12 @@ function renderOrderStats(){
           <td>${pos}</td>
           <td class="pan-cell" onclick="showPan('${pan}')">${pan}</td>
 
-          ${activeDates.map(d=>{
-
-          const day = v[d] || {success:0,reject:0};
-
-          return `
-          <td>${day.success}</td>
-          <td>${day.reject}</td>
-          `;
-
+          ${dates.map(d=>{
+            const day = v[d] || {success:0,reject:0};
+            return `
+              <td>${day.success}</td>
+              <td>${day.reject}</td>
+            `;
           }).join("")}
 
 </tr>
