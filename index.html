@@ -440,6 +440,17 @@
       margin-left: auto !important;
       text-align: right !important;
     }
+
+    /* thêm ở đây */
+    .pan-cell{
+      max-width:120px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      cursor:pointer;
+      color:#2563eb;
+      font-weight:700;
+    }
   </style>
 </head>
 
@@ -1039,6 +1050,11 @@ window.openPan = function(pan){
   openModal(`盘口：${pan}`, renderFullTable(rows, `盘口 = ${pan}`));
 };
 
+/* thêm ngay dưới đây */
+function showPan(pan){
+  openModal("盘口详情", `<div style="padding:20px;font-size:16px">${pan}</div>`);
+}
+
 /* =========================================================
    EMPLOYEES PAGE
    ✅ ADD: 工作内容
@@ -1580,7 +1596,7 @@ function renderOrderStats(){
 
           ${rows.map(([id,v])=>{
 
-          const emp = RAW.find(r=>r["ID"]===id);
+          const emp = RAW.find(r => (r["ID"] || "").trim() === id.trim());
 
           const name = emp?.["姓名"] || "-";
           const shift = emp?.["班次"] || "-";
@@ -1605,7 +1621,7 @@ function renderOrderStats(){
           <td>${shift}</td>
           <td>${country}</td>
           <td>${pos}</td>
-          <td>${pan}</td>
+          <td class="pan-cell" onclick="showPan('${pan}')">${pan}</td>
 
           ${dates.map(d=>{
 
@@ -1750,7 +1766,7 @@ const rows = Object.entries(ORDER_STATS || {})
 
           ${rows.map(([id,v])=>{
 
-          const emp = RAW.find(r=>r["ID"]===id);
+          const emp = RAW.find(r => (r["ID"] || "").trim() === id.trim());
 
           const name = emp?.["姓名"] || "-";
           const shift = emp?.["班次"] || "-";
@@ -1775,7 +1791,7 @@ const rows = Object.entries(ORDER_STATS || {})
           <td>${shift}</td>
           <td>${country}</td>
           <td>${pos}</td>
-          <td>${pan}</td>
+          <td class="pan-cell" onclick="showPan('${pan}')">${pan}</td>
           <td>${join}</td>
           <td>${total}</td>
           <td>${avg}</td>
