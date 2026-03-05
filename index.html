@@ -521,6 +521,7 @@ let RAW = [];
 let FILTERED = [];
 
 let ACCOUNT_MAP = {};
+let ACCOUNT_JOIN_DATE = {};
 let ORDER_STATS = {};
 
 let charts = { pos:null, team:null, shift:null };
@@ -1479,6 +1480,7 @@ async function loadAccountMap(){
       .split("/")
       .map(a=>a.trim())
       .filter(Boolean);
+    const joinDate = (r["入职时间"] || "").trim();  q
 
     accounts.forEach(acc=>{
       ACCOUNT_MAP[acc] = id;
