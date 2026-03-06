@@ -2060,6 +2060,20 @@ document.addEventListener("click", e => {
   }
 
 });
+  // Bắt tất cả ô td trong statsTable
+document.addEventListener("click", e => {
+  const td = e.target.closest("td");
+  if(!td) return;
+
+  // Nếu nội dung bị truncate (có ...), hoặc td.pan-cell
+  const style = window.getComputedStyle(td);
+  const isTruncated = td.scrollWidth > td.clientWidth;
+  
+  if(isTruncated || td.classList.contains("pan-cell")){
+    // Hiển thị modal full content
+    openModal("Chi tiết ô", `<div style="padding:20px;font-size:16px; word-break: break-word;">${esc(td.textContent)}</div>`);
+  }
+});
 
 load();
 </script>
