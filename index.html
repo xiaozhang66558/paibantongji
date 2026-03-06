@@ -446,43 +446,34 @@
       text-align: right !important;
     }
 
-/* ===== TRUNCATE CỘT 盘口 & CÁC Ô DÀI ===== */
-.pan-cell {
-  max-width: 120px;          /* chiều rộng tối đa */
-  overflow: hidden;          /* ẩn phần vượt */
-  text-overflow: ellipsis;   /* hiển thị dấu ... */
-  white-space: nowrap;       /* không xuống dòng */
-  cursor: pointer;           /* con trỏ thành tay khi hover */
-  color: #2563eb;            /* màu link */
-  font-weight: 700;
-}
-
-/* ===== BẢNG STATS: TRUNCATE & CỐ ĐỊNH CỘT 盘口 ===== */
-
-/* 1️⃣ Bắt buộc bảng statsTable có width 100% và layout fixed */
-.statsTable {
-  width: 100% !important;
+/* 1️⃣ Áp dụng cho tất cả bảng */
+table {
   table-layout: fixed !important;
+  width: 100% !important;
   border-collapse: collapse;
 }
 
-/* 2️⃣ Cột 盘口: cố định width, truncate */
+/* 2️⃣ Cột 盘口 luôn cố định width, truncate */
+td.pan-cell,
+th.pan-cell,
 .statsTable th:nth-child(7),
-.statsTable td.pan-cell {
-  width: 120px;              /* width cố định */
-  max-width: 120px;          
-  overflow: hidden;          
-  text-overflow: ellipsis;   
-  white-space: nowrap;       
-  cursor: pointer;           
-  color: #2563eb;            
+.statsTable td.pan-cell,
+table td:nth-child(7),
+table th:nth-child(7) {
+  max-width: 120px !important;
+  width: 120px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  cursor: pointer;
+  color: #2563eb;
   font-weight: 700;
   text-align: center;
-  word-break: break-word;    /* bắt buộc wrap text dài khi cần */
+  word-break: break-word;
 }
 
-/* 3️⃣ Các ô td khác cũng truncate khi cần */
-.statsTable td {
+/* 3️⃣ Tất cả td còn lại truncate nếu muốn */
+td {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
