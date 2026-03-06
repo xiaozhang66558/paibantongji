@@ -414,11 +414,47 @@
       text-align: center;
     }
 
-    /* Bảng không center toàn bộ, để header và td left-align */
-    table thead th,
-    table tbody td {
+    /* Table Stats / Orders view: left-align + sticky first 3 cột */
+    #page-stats table, #page-stats th, #page-stats td {
+      white-space: nowrap;
+      text-align: left; /* để dễ đọc */
+      padding: 6px 8px;
+      min-width: 45px;
+    }
+
+    #page-stats th.sticky-col-header,
+    #page-stats td.sticky-col {
+      position: sticky;
+      left: 0;
+      background: #fff;
+      z-index: 12;
+    }
+
+    #page-stats th:nth-child(1),
+    #page-stats td:nth-child(1){ left:0; z-index:12; background:#fff; min-width:130px; }
+    #page-stats th:nth-child(2),
+    #page-stats td:nth-child(2){ left:130px; z-index:12; background:#fff; min-width:160px; }
+    #page-stats th:nth-child(3),
+    #page-stats td:nth-child(3){ left:290px; z-index:12; background:#fff; min-width:140px; }
+
+    /* Header 2 dòng sticky */
+    #page-stats thead tr:first-child th{
+      position: sticky; top:0;
+      background: linear-gradient(180deg,#0b1220,#111827);
+      color:#fff;
+      z-index:14;
       text-align: left;
     }
+    #page-stats thead tr:nth-child(2) th{
+      position: sticky; top:36px;
+      background: linear-gradient(180deg,#0b1220,#111827);
+      color:#fff;
+      z-index:15;
+      text-align: left;
+    }
+    #page-stats thead tr:nth-child(2) th:nth-child(1){ left:0; z-index:16; }
+    #page-stats thead tr:nth-child(2) th:nth-child(2){ left:130px; z-index:16; }
+    #page-stats thead tr:nth-child(2) th:nth-child(3){ left:290px; z-index:16; }
 
     /* Center flex containers (khi cần) */
     .kpiRow,
@@ -517,8 +553,10 @@
 
 /* Body cells for activeDates */
 #page-stats tbody td:nth-child(n+4){
-  min-width:45px;
-  width:45px;
+  min-width:60px;
+  width:60px;
+  padding: 4px 6px;
+  text-align: right; /* số liệu dễ đọc */
 }
 
 /* Optional: hover highlight */
@@ -1181,7 +1219,13 @@ window.openPan = function(pan){
 
 /* thêm ngay dưới đây */
 function showPan(pan){
-  openModal("盘口详情", `<div style="padding:20px;font-size:16px">${pan}</div>`);
+  // Modal đẹp hơn, padding + font-size + text-left
+  openModal(`盘口详情: ${pan}`, `
+    <div style="padding:16px; font-size:14px; text-align:left;">
+      <p>盘口: <b>${pan}</b></p>
+      <p>点击表格查看详细员工名单</p>
+    </div>
+  `);
 }
 
 /* =========================================================
