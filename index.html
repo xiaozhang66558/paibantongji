@@ -459,20 +459,24 @@
      white-space:nowrap;
    }
 
-/* ===== 盘口 column cố định nhỏ ===== */
-   .pan-cell,
-   .statsTable th:nth-child(7),
-   .statsTable td:nth-child(7){
+/* ===== FIX 盘口 column toàn hệ thống ===== */
 
-     width:140px !important;
-     min-width:140px !important;
-     max-width:140px !important;
+/* header 盘口 */
+th:nth-child(12){
+  width:140px !important;
+  min-width:140px !important;
+  max-width:140px !important;
+}
 
-     white-space:normal !important;
-     word-break:break-word;
+/* cell 盘口 */
+td:nth-child(12){
+  width:140px !important;
+  min-width:140px !important;
+  max-width:140px !important;
 
-     text-align:center;
-   }
+  white-space:normal !important;
+  word-break:break-word;
+}
    }
     /* =========================
        STICKY HEADER - 2 ROWS ĐỒNG NHẤT NỀN
