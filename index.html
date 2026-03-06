@@ -1432,8 +1432,16 @@ async function load(){
       ERROR_ROWS.forEach(r => {
         const id = (r["ID"]||"").trim();
         if(!ERROR_MAP.has(id)) ERROR_MAP.set(id, []);
-        ERROR_MAP.get(id).push(r);
+
+        // chỉ giữ cột A→D
+        ERROR_MAP.get(id).push({
+          "ID": r["ID"] || "",
+          "会员/id /订单号": r["会员/id /订单号"] || "",
+          "工单号": r["工单号"] || "",
+          "Mistake Remark / 错误备注": r["Mistake Remark / 错误备注"] || ""
+        });
       });
+});
 
     } catch(err) {
       console.error("Load ERROR sheet failed", err);
