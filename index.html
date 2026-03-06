@@ -1876,45 +1876,89 @@ function renderOrderStats(){
 
           ${rows.map(([id,v])=>{
 
-          const emp = FILTERED.find(r=>r["ID"]===id) || RAW.find(r=>r["ID"]===id);
+            const emp = FILTERED.find(r => (r["ID"] || "").trim() === id)
+                     || RAW.find(r => (r["ID"] || "").trim() === id);
 
-          const name = emp?.["姓名"] || "-";
-          const shift = emp?.["班次"] || "-";
-          const country = emp?.["国家"] || "-";
-          const pos = emp?.["岗位"] || "-";
-          const pan = emp?.["盘口"] || "-";
-          const join = ACCOUNT_JOIN_DATE[id] || "-";
-          let total = 0;
+            const name = emp?.["姓名"] || "-";
+            const team = emp?.["团队"] || "-";
+            const shift = emp?.["班次"] || "-";
+            const country = emp?.["国家"] || "-";
+            const pos = emp?.["岗位"] || "-";
+            const pan = emp?.["盘口"] || "-";
+            const join = ACCOUNT_JOIN_DATE[id] || "-";
 
-          dates.forEach(d=>{
-            const day = v[d] || {success:0,reject:0};
-            total += (day.success || 0);
-          });
+            let total = 0;
+            let validDays = 0;
 
-          const avg = dates.length ? Math.round(total / dates.length) : 0;
+            const joinDate = normDateISO(ACCOUNT_JOIN_DATE[id] || "");
 
-          return `
-          <tr>
+            activeDates.forEach(d => {
 
-          <td>${id}</td>
-          <td>${name}</td>
-          <td>${shift}</td>
-          <td>${country}</td>
-          <td>${pos}</td>
-          <td class="pan-cell" onclick="showPan('${pan}')">${pan}</td>
+              const dayDate = normDateISO(d);
 
-          ${dates.map(d=>{
-            const day = v[d] || {success:0,reject:0};
+              if(joinDate && new Date(dayDate) < new Date(joinDate)){
+                return;
+              }
+
+              const day = v?.[d] || {success:0, reject:0};
+              const dayTotal = (Number(day.success || 0) + Number(day.reject || 0));
+
+              if(dayTotal > 0){
+                total += dayTotal;
+                validDays += 1;
+              }
+
+            });
+
+            const avg = validDays ? Math.round(total / validDays) : 0;
+
+            const mistakeCount = MISTAKES.filter(m => {
+
+             const mid = (m["ID"] || "").trim();
+              if(mid !== id) return false;
+
+              const date = (m["复检时间"] || "").slice(0,10);
+
+              if(fromDate && date < fromDate) return false;
+              if(toDate && date > toDate) return false;
+
+              return true;
+
+            }).length;
+
             return `
-              <td>${day.success}</td>
-              <td>${day.reject}</td>
+            <tr>
+              <td>${esc(id)}</td>
+              <td>${esc(name)}</td>
+              <td>${esc(team)}</td>
+              <td>${esc(shift)}</td>
+              <td>${esc(country)}</td>
+              <td>${esc(pos)}</td>
+              <td class="pan-cell" onclick="showFullContent('盘口','${esc(pan)}')">${esc(pan)}</td>
+              <td>${esc(join)}</td>
+              <td class="sortable" data-value="${total}">${total}</td>
+              <td class="sortable" data-value="${avg}">${avg}</td>
+              <td class="link sortable" data-value="${mistakeCount}" onclick="event.stopPropagation(); openMistakeList('${id}')">${mistakeCount}</td>
+
+              ${activeDates.map(d=>{
+
+                const joinDate = normDateISO(ACCOUNT_JOIN_DATE[id] || "");
+                const dayDate = normDateISO(d);
+
+                if(joinDate && new Date(dayDate) < new Date(joinDate)){
+                  return `<td>0 / 0</td>`;
+                }
+
+                const day = v?.[d] || {success:0,reject:0};
+
+                return `<td>${day.success || 0} / ${day.reject || 0}</td>`;
+
+              }).join("")}
+
+            </tr>
             `;
+
           }).join("")}
-
-</tr>
-`;
-
-}).join("")}
 
         </tbody>
 
