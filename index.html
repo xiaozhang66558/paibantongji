@@ -902,9 +902,8 @@ function openManagerList(fieldLabel, rows){
   openModal(`${fieldLabel} 名单（${names.length}）`, html);
 }
   
-window.openManagerSubs = function(fieldLabel, managerName){
-
-  function renderErrorCountModal(id){
+// ===== Đặt NGAY TRƯỚC hoặc SAU modalStack / openModal / pushModal =====
+window.renderErrorCountModal = function(id){
   const rows = ERROR_MAP.get(id) || [];
   const count = rows.length;
 
@@ -916,9 +915,6 @@ window.openManagerSubs = function(fieldLabel, managerName){
   `;
 
   openModal(`错误统计 - ${id}`, html);
-}
-  const subs = FILTERED.filter(r=>norm(r[fieldLabel])===managerName);
-  pushModal(`${fieldLabel}：${managerName}（下属 ${countByUniqueName(subs)}）`, renderFullTable(subs, `${fieldLabel} = ${managerName}`));
 };
 
 /* =========================================================
