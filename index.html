@@ -2137,6 +2137,12 @@ function makeTableResizable(table){
 }
 
 load();
+
+setTimeout(() => {
+  document.querySelectorAll("table").forEach(table => {
+    makeTableResizable(table);
+  });
+}, 500);
 </script>
 </body>
 </html>
