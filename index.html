@@ -460,7 +460,6 @@
 /* =========================
    STATS TABLE STICKY FIX
 ========================= */
-
 #page-stats .tableWrap{
   overflow:auto;
 }
@@ -468,131 +467,62 @@
 #page-stats table{
   width:max-content;
   min-width:1200px;
+  border-collapse: collapse;
 }
 
 #page-stats th,
 #page-stats td{
-  white-space:nowrap;
+  white-space: nowrap;
+  text-align: center;
+  padding: 6px 8px;
 }
 
-/* freeze first 3 columns */
-
-/* freeze column 1 */
-
+/* Freeze first 3 columns */
 #page-stats th:nth-child(1),
-#page-stats td:nth-child(1){
-  position:sticky;
-  left:0;
-  min-width:130px;
-}
-
-#page-stats th:nth-child(1){
-  background:#0b1220;
-  z-index:6;
-}
-
-#page-stats td:nth-child(1){
-  background:#fff;
-  z-index:4;
-}
-
-
-/* column 2 */
-
+#page-stats td:nth-child(1){ position: sticky; left:0; z-index:9; background:#fff; min-width:130px; }
 #page-stats th:nth-child(2),
-#page-stats td:nth-child(2){
-  position:sticky;
-  left:130px;
-  min-width:160px;
-}
-
-#page-stats th:nth-child(2){
-  background:#0b1220;
-  z-index:6;
-}
-
-#page-stats td:nth-child(2){
-  background:#fff;
-  z-index:4;
-}
-
-
-/* column 3 */
-
+#page-stats td:nth-child(2){ position: sticky; left:130px; z-index:9; background:#fff; min-width:160px; }
 #page-stats th:nth-child(3),
-#page-stats td:nth-child(3){
-  position:sticky;
-  left:290px;
-  min-width:140px;
+#page-stats td:nth-child(3){ position: sticky; left:290px; z-index:9; background:#fff; min-width:140px; }
+
+/* Row headers (first row: 日期) */
+#page-stats thead tr:first-child th{
+  position: sticky; top:0;
+  background: linear-gradient(180deg,#0b1220,#111827);
+  color:#fff;
+  z-index:7;
+  text-align: center;
 }
 
-#page-stats th:nth-child(3){
-  background:#0b1220;
-  z-index:6;
+/* Row 2: 成功 / 驳回 */
+#page-stats thead tr:nth-child(2) th{
+  position: sticky;
+  top:36px;
+  background: linear-gradient(180deg,#0b1220,#111827);
+  color:#fff;
+  z-index:8;
 }
 
-#page-stats td:nth-child(3){
-  background:#fff;
-  z-index:4;
-}
+/* Gắn left tương ứng để row 2 không lệch */
+#page-stats thead tr:nth-child(2) th:nth-child(1){ left:0; z-index:10; }
+#page-stats thead tr:nth-child(2) th:nth-child(2){ left:130px; z-index:10; }
+#page-stats thead tr:nth-child(2) th:nth-child(3){ left:290px; z-index:10; }
 
-/* header layer */
-
-#page-stats thead th:nth-child(1),
-#page-stats thead th:nth-child(2),
-#page-stats thead th:nth-child(3){
-  z-index:5;
-  background:linear-gradient(180deg,#0b1220,#111827);
-}
-
-/* date columns width */
-
+/* Date columns */
 #page-stats thead th[colspan="2"]{
   width:80px;
   min-width:80px;
   max-width:80px;
 }
-/* Hàng 1: ngày */
-#page-stats thead th[colspan] {
-  position: sticky;
-  top: 0;
-  background: linear-gradient(180deg,#0b1220,#111827);
-  color: #fff;
-  z-index: 6; /* thấp hơn hàng 2 nhưng cao hơn tbody */
-  text-align: center;
-}
 
-/* ===== HÀNG 2: 成功 / 驳回 FIX ===== */
-#page-stats thead tr:nth-child(2) th {
-  position: sticky;
-  top: 36px; /* chiều cao row ngày */
-  background: linear-gradient(180deg,#0b1220,#111827);
-  color: #fff;
-  z-index: 7;
-  text-align: center;
-}
-
-/* Thêm left cho từng th để không chạy lệch */
-#page-stats thead tr:nth-child(2) th:nth-child(1) { left:0; }       /* ID */
-#page-stats thead tr:nth-child(2) th:nth-child(2) { left:130px; }   /* 姓名 */
-#page-stats thead tr:nth-child(2) th:nth-child(3) { left:290px; }   /* 团队 */
-#page-stats thead tr:nth-child(2) th:nth-child(4) { left:430px; }   /* 班次 */
-#page-stats thead tr:nth-child(2) th:nth-child(5) { left:500px; }   /* 国家 */
-#page-stats thead tr:nth-child(2) th:nth-child(6) { left:570px; }   /* 岗位 */
-#page-stats thead tr:nth-child(2) th:nth-child(7) { left:640px; }   /* 盘口 */
-#page-stats thead tr:nth-child(2) th:nth-child(8) { left:710px; }   /* 入职时间 */
-#page-stats thead tr:nth-child(2) th:nth-child(9) { left:780px; }   /* 总 */
-#page-stats thead tr:nth-child(2) th:nth-child(10){ left:850px; }   /* 平均每天 */
-
-#page-stats tbody td:nth-child(n+11){
-  width:40px;
-  min-width:40px;
-}
-
-#page-stats tbody td:nth-child(n+11){
+/* Body cells for activeDates */
+#page-stats tbody td:nth-child(n+4){
   min-width:45px;
   width:45px;
 }
+
+/* Optional: hover highlight */
+#page-stats tbody tr:hover{ background: #f7fbff; }
   </style>
 </head>
 
