@@ -2052,7 +2052,7 @@ function renderStatsPage(){
               let total = 0;
               let validDays = 0;
 
-              const joinDate = (ACCOUNT_JOIN_DATE[id] || "").slice(0,10);
+              const joinDate = normDateISO(ACCOUNT_JOIN_DATE[id] || "");
 
               activeDates.forEach(d => {
                 const day = v?.[d] || {success:0, reject:0};
