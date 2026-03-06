@@ -724,7 +724,7 @@ els.modalBack.onclick = ()=>{
 };
 
   function openErrorModal(id){
-  const rows = ERROR_ROWS.filter(r => (r["ID"]||"").trim() === id);
+  const rows = ERROR_MAP.get(id) || [];
   if(!rows.length){
     openModal(`错误 - ${id}`, `<div class="note">No error records found</div>`);
     return;
@@ -1426,6 +1426,13 @@ async function load(){
     try {
       const resErr = await fetch(ERROR_API);
       ERROR_ROWS = await resErr.json();
+      // thêm map để lookup nhanh
+      const ERROR_MAP = new Map();
+      ERROR_ROWS.forEach(r => {
+        const id = (r["ID"]||"").trim();
+        if(!ERROR_MAP.has(id)) ERROR_MAP.set(id, []);
+        ERROR_MAP.get(id).push(r);
+      });
     } catch(err) {
       console.error("Load ERROR sheet failed", err);
       ERROR_ROWS = [];
@@ -1890,7 +1897,7 @@ function renderStatsPage(){
 
                   <td class="link" style="color:#2563eb; font-weight:700; cursor:pointer;"
                       onclick="openErrorModal('${esc(id)}')">
-                    ${ERROR_ROWS.filter(r => (r["ID"]||"").trim()===id).length || 0}
+                    ${ERROR_MAP.get(id)?.length || 0}
                   </td>
 
                   ${activeDates.map(d=>{
