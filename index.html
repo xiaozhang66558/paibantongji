@@ -1945,7 +1945,7 @@ function renderOrderStats(){
                 const joinDate = normDateISO(ACCOUNT_JOIN_DATE[id] || "");
                 const dayDate = normDateISO(d);
 
-                if(joinDate && new Date(dayDate) < new Date(joinDate)){
+                if(joinDate && dayDate < joinDate){
                   return `<td>0 / 0</td>`;
                 }
 
