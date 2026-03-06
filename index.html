@@ -459,27 +459,24 @@
     /* =========================
        STICKY HEADER - 2 ROWS ĐỒNG NHẤT NỀN
     ========================= */
+    /* Sticky header: giữ nguyên 2 hàng đầu khi scroll */
     .tableWrap {
       overflow: auto;
-      position: relative; /* quan trọng để sticky hoạt động */
+      position: relative;
     }
 
-    table thead th {
-      position: sticky;
-      top: 0;          
-      z-index: 20;
-      background: linear-gradient(180deg, #0b1220, #111827); /* toàn bộ nền đen */
-      color: #fff;
-      text-align: center;
-      padding: 10px 10px;
-      border-bottom: 1px solid #222; /* optional, làm rõ viền */
-    }
-
-    /* loại bỏ việc tách top row / second row */
     table thead tr:first-child th,
     table thead tr:nth-child(2) th {
-      top: 0;  /* tất cả đều top:0 */
+      position: sticky;
+      top: 0; /* đầu tiên */
+      background: #0b1220; /* màu nền header */
+      color: #fff;
       z-index: 20;
+    }
+
+    table thead tr:nth-child(2) th {
+      top: 40px; /* hoặc chiều cao hàng đầu tiên */
+      z-index: 19;
     }
     }
   </style>
