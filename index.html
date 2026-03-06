@@ -552,9 +552,15 @@
   min-width:80px;
   max-width:80px;
 }
-    #page-stats thead tr:nth-child(2) th{
+#page-stats thead tr:nth-child(2) th{
   width:40px;
   min-width:40px;
+  position: sticky;
+  top: 40px; /* khoảng cách từ top header row 1 tới row 2 */
+  background: linear-gradient(180deg,#0b1220,#111827);
+  color: #fff;
+  z-index: 5;
+  text-align: center;
 }
 
 #page-stats tbody td:nth-child(n+11){
