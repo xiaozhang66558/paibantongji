@@ -324,26 +324,29 @@
       border:1px solid rgba(255,255,255,.12);
     }
 
-    /* modal */
     .modal{
-      position:fixed; inset:0;
+      position: fixed; inset:0;
       background: rgba(2,6,23,.55);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index:200;
+      display: none;
+      display:flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
       padding: 18px;
+      text-align: initial; /* bỏ center cưỡng bức */
     }
+
     .modal .box{
       width: min(1400px, 98vw);
       max-height: 92vh;
-      overflow:auto;
+      overflow: auto;
       background: rgba(255,255,255,.95);
       border: 1px solid rgba(255,255,255,.18);
       box-shadow: 0 20px 60px rgba(0,0,0,.35);
       border-radius: 22px;
       padding: 16px;
       backdrop-filter: blur(14px);
+      text-align: left; /* nội dung text modal left, click target ổn định */
     }
     .modal .head{
       display:flex; align-items:center; justify-content:space-between;
@@ -397,33 +400,32 @@
       border:1px solid #ccc;
     }
 
-    /* ===== FORCE CENTER ALL TEXT ===== */
+    /* ===== FORCE CENTER ONLY CARDS / KPI / PILL ===== */
     body,
     .card,
     .kpi,
     .tile,
     .empCard,
-    .modal .box,
     .note,
     .sub,
     .badge,
     .pill,
-    .btn,
-    table,
-    thead th,
-    tbody td {
-      text-align: center !important;
+    .btn {
+      text-align: center;
     }
 
-    /* Center flex containers */
-    header,
-    .filterBar,
-    .topTabs,
+    /* Bảng không center toàn bộ, để header và td left-align */
+    table thead th,
+    table tbody td {
+      text-align: left;
+    }
+
+    /* Center flex containers (khi cần) */
     .kpiRow,
     .grid2,
     .btnRow,
     .empCard .row1 {
-      justify-content: center !important;
+      justify-content: center;
     }
 
     /* ===== GIỮ HEADER & FILTER NHƯ CŨ ===== */
@@ -477,36 +479,34 @@
   padding: 6px 8px;
 }
 
-/* Freeze first 3 columns */
+/* Freeze first 3 columns với z-index đúng */
 #page-stats th:nth-child(1),
-#page-stats td:nth-child(1){ position: sticky; left:0; z-index:9; background:#fff; min-width:130px; }
+#page-stats td:nth-child(1){ position: sticky; left:0; z-index:12; background:#fff; min-width:130px; }
 #page-stats th:nth-child(2),
-#page-stats td:nth-child(2){ position: sticky; left:130px; z-index:9; background:#fff; min-width:160px; }
+#page-stats td:nth-child(2){ position: sticky; left:130px; z-index:12; background:#fff; min-width:160px; }
 #page-stats th:nth-child(3),
-#page-stats td:nth-child(3){ position: sticky; left:290px; z-index:9; background:#fff; min-width:140px; }
+#page-stats td:nth-child(3){ position: sticky; left:290px; z-index:12; background:#fff; min-width:140px; }
 
-/* Row headers (first row: 日期) */
+/* Row headers */
 #page-stats thead tr:first-child th{
   position: sticky; top:0;
   background: linear-gradient(180deg,#0b1220,#111827);
   color:#fff;
-  z-index:7;
-  text-align: center;
+  z-index:14;
+  text-align: left; /* để header không bị center */
 }
-
-/* Row 2: 成功 / 驳回 */
 #page-stats thead tr:nth-child(2) th{
-  position: sticky;
-  top:36px;
+  position: sticky; top:36px;
   background: linear-gradient(180deg,#0b1220,#111827);
   color:#fff;
-  z-index:8;
+  z-index:15;
+  text-align: left;
 }
 
-/* Gắn left tương ứng để row 2 không lệch */
-#page-stats thead tr:nth-child(2) th:nth-child(1){ left:0; z-index:10; }
-#page-stats thead tr:nth-child(2) th:nth-child(2){ left:130px; z-index:10; }
-#page-stats thead tr:nth-child(2) th:nth-child(3){ left:290px; z-index:10; }
+/* Row 2: align left, gắn left cho cột */
+#page-stats thead tr:nth-child(2) th:nth-child(1){ left:0; z-index:16; }
+#page-stats thead tr:nth-child(2) th:nth-child(2){ left:130px; z-index:16; }
+#page-stats thead tr:nth-child(2) th:nth-child(3){ left:290px; z-index:16; }
 
 /* Date columns */
 #page-stats thead th[colspan="2"]{
