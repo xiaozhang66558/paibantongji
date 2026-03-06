@@ -492,44 +492,59 @@
       font-weight:700;
     }
 /* ================= STATS TABLE FIXED ================= */
+/* Table container */
 #page-stats .tableWrap { overflow:auto; max-width:100%; max-height:70vh; }
 
+/* Table fix layout */
 #page-stats table {
   border-collapse:collapse;
   min-width:max-content;
   font-size:12px;
-  table-layout: fixed; /* cố định cột */
+  table-layout: fixed;
 }
 
+/* All th/td base */
 #page-stats th, #page-stats td {
   padding:6px 8px;
   white-space: nowrap;
-  text-overflow: ellipsis;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Sticky 3 cột đầu tiên */
-#page-stats th.sticky-col-header,
+#page-stats th.sticky-col,
 #page-stats td.sticky-col {
   position: sticky;
-  background:#111827;
+  left: 0;
+  background:#111827; /* hoặc #fff nếu muốn đè dữ liệu */
   color:#fff;
-  z-index: 12;
+  z-index: 30;
 }
 
-/* Chỉ định left cho từng cột */
-#page-stats th:nth-child(1), #page-stats td:nth-child(1){ left:0; min-width:120px; z-index:22; }
-#page-stats th:nth-child(2), #page-stats td:nth-child(2){ left:120px; min-width:150px; z-index:22; }
-#page-stats th:nth-child(3), #page-stats td:nth-child(3){ left:270px; min-width:150px; z-index:22; }
+/* Cột 2 & 3 sticky */
+#page-stats th:nth-child(2), #page-stats td:nth-child(2){ left:120px; z-index:30; }
+#page-stats th:nth-child(3), #page-stats td:nth-child(3){ left:270px; z-index:30; }
 
-/* Sticky 2-row header */
-#page-stats thead tr:first-child th { position: sticky; top:0; z-index:20; background:#111827; color:#fff; text-align:center; }
-#page-stats thead tr:nth-child(2) th { position: sticky; top:36px; z-index:21; background:#111827; color:#fff; text-align:center; }
+/* Sticky header row gộp 2 dòng */
+#page-stats thead tr th {
+  position: sticky;
+  top:0;
+  background:#111827;
+  color:#fff;
+  z-index: 20;
+  text-align:center;
+}
 
-/* Sticky 2nd row + 3 cột đầu tiên */
-#page-stats thead tr:nth-child(2) th:nth-child(1){ left:0; z-index:22; }
-#page-stats thead tr:nth-child(2) th:nth-child(2){ left:120px; z-index:22; }
-#page-stats thead tr:nth-child(2) th:nth-child(3){ left:270px; z-index:22; }
+/* Pan-cell vẫn clickable */
+#page-stats .pan-cell {
+  cursor:pointer;
+  color:#2563eb;
+  font-weight:700;
+  text-overflow: ellipsis;
+  overflow:hidden;
+  max-width:120px;
+  background:#fff; /* đảm bảo đè lên header */
+}
 
 /* Pan-cell vẫn clickable */
 #page-stats .pan-cell {
