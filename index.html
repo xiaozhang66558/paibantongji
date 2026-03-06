@@ -571,7 +571,6 @@ const ACCOUNT_API =
 
 const ERROR_API = "https://opensheet.vercel.app/1TEp-YzwjFKjorR4Xpmrb6UiKq2maMmawIW6oYQI75qM/员工错误";
 let ERROR_ROWS = [];
-let ERROR_MAP = new Map(); // thêm dòng này ngay dưới ERROR_ROWS
 
 /*
   Column mapping (by header names from your sheet):
@@ -725,7 +724,7 @@ els.modalBack.onclick = ()=>{
 };
 
   function openErrorModal(id){
-  const rows = ERROR_MAP.get(id) || [];
+  const rows = ERROR_ROWS.filter(r => (r["ID"]||"").trim() === id);
   if(!rows.length){
     openModal(`错误 - ${id}`, `<div class="note">No error records found</div>`);
     return;
@@ -1427,18 +1426,9 @@ async function load(){
     try {
       const resErr = await fetch(ERROR_API);
       ERROR_ROWS = await resErr.json();
-
-      ERROR_MAP.clear(); // xóa dữ liệu cũ
-      ERROR_ROWS.forEach(r => {
-        const id = (r["ID"]||"").trim();
-        if(!ERROR_MAP.has(id)) ERROR_MAP.set(id, []);
-        ERROR_MAP.get(id).push(r);
-      });
-
     } catch(err) {
       console.error("Load ERROR sheet failed", err);
       ERROR_ROWS = [];
-      ERROR_MAP.clear(); // clear luôn nếu load thất bại
     }
 
     const res = await fetch(SHEET_API, { cache:"no-store" });
@@ -1900,7 +1890,7 @@ function renderStatsPage(){
 
                   <td class="link" style="color:#2563eb; font-weight:700; cursor:pointer;"
                       onclick="openErrorModal('${esc(id)}')">
-                    ${ERROR_MAP.get(id)?.length || 0}
+                    ${ERROR_ROWS.filter(r => (r["ID"]||"").trim()===id).length || 0}
                   </td>
 
                   ${activeDates.map(d=>{
