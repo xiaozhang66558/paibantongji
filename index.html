@@ -902,8 +902,22 @@ function openManagerList(fieldLabel, rows){
   `;
   openModal(`${fieldLabel} 名单（${names.length}）`, html);
 }
-
+  
 window.openManagerSubs = function(fieldLabel, managerName){
+
+  function renderErrorCountModal(id){
+  const rows = ERROR_MAP.get(id) || [];
+  const count = rows.length;
+
+  const html = `
+    <div class="note" style="font-size:16px; padding:20px;">
+      ID: <b>${esc(id)}</b> <br>
+      错误次数: <b>${count}</b> 次
+    </div>
+  `;
+
+  openModal(`错误统计 - ${id}`, html);
+}
   const subs = FILTERED.filter(r=>norm(r[fieldLabel])===managerName);
   pushModal(`${fieldLabel}：${managerName}（下属 ${countByUniqueName(subs)}）`, renderFullTable(subs, `${fieldLabel} = ${managerName}`));
 };
@@ -1907,7 +1921,7 @@ function renderStatsPage(){
                   <td class="sortable" data-value="${avg}">${avg}</td>
 
                   <td class="link" style="color:#2563eb; font-weight:700; cursor:pointer;"
-                      onclick="openErrorModal('${esc(id)}')">
+                      onclick="renderErrorCountModal('${esc(id)}')">
                     ${ERROR_MAP.get(id)?.length || 0}
                   </td>
 
