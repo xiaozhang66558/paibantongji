@@ -2052,13 +2052,22 @@ function renderStatsPage(){
               let total = 0;
               let validDays = 0;
 
+              const joinDate = (ACCOUNT_JOIN_DATE[id] || "").slice(0,10);
+
               activeDates.forEach(d => {
+
+                // ❗ nếu ngày xử lý trước ngày入职 thì bỏ qua
+                if(joinDate && d < joinDate) return;
+
                 const day = v?.[d] || {success:0, reject:0};
+
                 const dayTotal = (Number(day.success || 0) + Number(day.reject || 0));
+
                 if(dayTotal > 0){
                   total += dayTotal;
                   validDays += 1;
                 }
+
               });
 
               const avg = validDays ? Math.round(total / validDays) : 0;
