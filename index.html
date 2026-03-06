@@ -481,6 +481,18 @@
       background: linear-gradient(180deg, #0b1220, #111827);
     }
     }
+    /* ===== SORT ICON CHO CÁC CỘT ===== */
+    .sortable {
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+    }
+
+    .sortable .sort-arrow {
+      font-size: 10px;
+      margin-left: 4px;
+      color: #fff;
+    }
   </style>
 </head>
 
@@ -1790,8 +1802,17 @@ function renderStatsPage(){
            <th>岗位</th>
            <th>盘口</th>
            <th>入职时间</th>
-           <th rowspan="1" class="sortable">总</th>
-           <th rowspan="1" class="sortable">平均每天处理</th>
+           <th class="sortable">
+           <th>入职时间</th>
+             总 <span class="sort-arrow">⇅</span>
+           <th>入职时间</th>
+           </th>
+           <th>入职时间</th>
+           <th class="sortable">
+           <th>入职时间</th>
+             平均每天处理 <span class="sort-arrow">⇅</span>
+           <th>入职时间</th>
+           </th>
            ${activeDates.map(d=>`<th>${esc(d)}<br>成功</th><th>${esc(d)}<br>驳回</th>`).join("")}
          </tr>
        </thead>
