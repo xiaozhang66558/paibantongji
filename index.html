@@ -569,6 +569,9 @@ const ORDER_API =
 const ACCOUNT_API =
 "https://opensheet.elk.sh/1e38ZBHG0B0nxODaooPhgreG67A2RLxLxrpP8Sas_vZA/账号";
 
+const ERROR_API = "https://opensheet.vercel.app/1TEp-YzwjFKjorR4Xpmrb6UiKq2maMmawIW6oYQI75qM/员工错误";
+let ERROR_ROWS = [];
+
 /*
   Column mapping (by header names from your sheet):
   负责人        现场培训        线上组长        线上培训        组别        团队        姓名        ID        班次        国家        岗位        盘口        工作内容
@@ -719,6 +722,29 @@ els.modalBack.onclick = ()=>{
   openModal(prev.title, prev.html);
   els.modalBack.style.display = modalStack.length ? "inline-flex" : "none";
 };
+
+  function openErrorModal(id){
+  const rows = ERROR_ROWS.filter(r => (r["ID"]||"").trim() === id);
+  if(!rows.length){
+    openModal(`错误 - ${id}`, `<div class="note">No error records found</div>`);
+    return;
+  }
+
+  const cols = Object.keys(rows[0]).slice(0,12); // cột A→L
+  const html = `
+    <div class="tableWrap">
+      <table>
+        <thead>
+          <tr>${cols.map(c=>`<th>${esc(c)}</th>`).join("")}</tr>
+        </thead>
+        <tbody>
+          ${rows.map(r=>`<tr>${cols.map(c=>`<td>${esc(r[c]||"-")}</td>`).join("")}</tr>`).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+  openModal(`错误 - ${id}`, html);
+}
 
 /* =========================================================
    FILTERS
@@ -1397,6 +1423,14 @@ async function load(){
     
     els.meta.textContent = "Loading data from Google Sheet…";
 
+    try {
+      const resErr = await fetch(ERROR_API);
+      ERROR_ROWS = await resErr.json();
+    } catch(err) {
+      console.error("Load ERROR sheet failed", err);
+      ERROR_ROWS = [];
+    }
+
     const res = await fetch(SHEET_API, { cache:"no-store" });
     if(!res.ok) throw new Error("Fetch failed: " + res.status);
 
@@ -1808,6 +1842,7 @@ function renderStatsPage(){
            <th>入职时间</th>
            <th class="sortable" data-value="total">总 <span class="sort-arrow">⇅</span></th>
            <th class="sortable" data-value="avg">平均每天处理 <span class="sort-arrow">⇅</span></th>
+           <th>错误</th>
            ${activeDates.map(d => `<th>${esc(d)}<br>成功/驳回</th>`).join("")}
          </tr>
        </thead>
@@ -1853,13 +1888,15 @@ function renderStatsPage(){
                   <td class="sortable" data-value="${total}">${total}</td>
                   <td class="sortable" data-value="${avg}">${avg}</td>
 
+                  <td class="link" style="color:#2563eb; font-weight:700; cursor:pointer;"
+                      onclick="openErrorModal('${esc(id)}')">
+                    ${ERROR_ROWS.filter(r => (r["ID"]||"").trim()===id).length || 0}
+                  </td>
+
                   ${activeDates.map(d=>{
                     const day = v?.[d] || {success:0,reject:0};
-                    return `<td>${day.success || 0} / ${day.reject || 0}</td>`;
+                    return `<td>${day.success || 0}</td><td>${day.reject || 0}</td>`;
                   }).join("")}
-                </tr>
-              `;
-            }).join("")}
 
           </tbody>
         </table>
