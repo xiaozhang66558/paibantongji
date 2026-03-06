@@ -2077,7 +2077,7 @@ function renderStatsPage(){
                   <td class="sortable" data-value="${total}">${total}</td>
                   <td class="sortable" data-value="${avg}">${avg}</td>
                   <td class="link sortable" data-value="${mistakeCount}" 
-                  onclick="openMistakeList('${id}')">
+                  onclick="event.stopPropagation(); openMistakeList('${id}')">
                   ${mistakeCount}
                   </td>
 
@@ -2132,7 +2132,7 @@ document.addEventListener("click", e => {
 
   // 2️⃣ Nếu click vào ô trong statsTable → mở modal
   const td = e.target.closest(".statsTable td");
-  if(td){
+  if(td && !td.classList.contains("link")){
     const content = td.textContent.trim();
     if(content){
       openModal("Chi tiết ô", `<div style="padding:20px;font-size:16px">${esc(content)}</div>`);
