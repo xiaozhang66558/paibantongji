@@ -686,25 +686,25 @@ function s(v){ return (v ?? "").toString().trim(); }
 function norm(v){ return s(v).replace(/\s+/g," ").trim(); }
 function uniq(arr){ return [...new Set(arr.filter(Boolean))]; }
 function normDateISO(v){
+
   const str = (v ?? "").toString().trim();
   if(!str) return "";
+
+  // đã là YYYY-MM-DD
   if(/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
 
-  let m = str.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})$/);
+  // xử lý 2026年2月8日
+  let m = str.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日$/);
   if(m){
-    const y=m[1], mm=String(+m[2]).padStart(2,"0"), dd=String(+m[3]).padStart(2,"0");
-    return `${y}-${mm}-${dd}`;
+    return `${m[1]}-${String(m[2]).padStart(2,"0")}-${String(m[3]).padStart(2,"0")}`;
   }
 
-  m = str.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+  // xử lý 2026/2/8 hoặc 2026.2.8
+  m = str.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})$/);
   if(m){
-    let a=+m[1], b=+m[2], y=m[3];
-    let day, month;
-    if(a>12){ day=a; month=b; }
-    else if(b>12){ month=a; day=b; }
-    else { day=a; month=b; } // mặc định D/M/YYYY
-    return `${y}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+    return `${m[1]}-${String(m[2]).padStart(2,"0")}-${String(m[3]).padStart(2,"0")}`;
   }
+
   return str;
 }
 
