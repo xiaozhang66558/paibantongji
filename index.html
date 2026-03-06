@@ -2158,11 +2158,12 @@ function renderStatsPage(){
                   const day = v?.[d] || {success:0,reject:0};
 
                   return `<td>${day.success || 0} / ${day.reject || 0}</td>`;
-
+                  
+                   `;
                 }).join("")}
 
               </tr>
-              `;
+
 
           </tbody>
         </table>
