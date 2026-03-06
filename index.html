@@ -2242,6 +2242,11 @@ function openMistakeList(id){
       <thead>
         <tr>
           <th>ID</th>
+          <th>姓名</th>
+          <th>团队</th>
+          <th>岗位</th>
+          <th>盘口</th>
+          <th>会员/id /订单号</th>
           <th>工单号</th>
           <th>错误备注</th>
           <th>正确操作方式</th>
@@ -2251,10 +2256,16 @@ function openMistakeList(id){
           <th>质检时间</th>
         </tr>
       </thead>
+
       <tbody>
         ${list.map(r=>`
           <tr>
             <td>${r["ID"]}</td>
+            <td>${r["姓名"]}</td>
+            <td>${r["团队"]}</td>
+            <td>${r["岗位"]}</td>
+            <td>${r["盘口"]}</td>
+            <td>${r["会员/id /订单号"]}</td>
             <td>${r["工单号"]}</td>
             <td>${r["错误备注"]}</td>
             <td>${r["正确操作方式"]}</td>
@@ -2265,11 +2276,12 @@ function openMistakeList(id){
           </tr>
         `).join("")}
       </tbody>
+
     </table>
   </div>
   `;
 
-  openModal("员工错误记录 - " + id, html);
+  openModal("员工错误记录 - " + id + " （" + list.length + "）", html);
 }
 load();
 
