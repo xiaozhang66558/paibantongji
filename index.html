@@ -421,21 +421,22 @@
       min-width: 1200px;
     }
 
-    /* Cột sticky: ID, 姓名, 团队 */
-    #page-stats th.sticky-col-header,
-    #page-stats td.sticky-col {
-      position: sticky;
-      background: #fff;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      z-index: 12;
-    }
+   /* Sticky 3 cột đầu: ID / 姓名 / 团队 */
+   #page-stats th.sticky-col, 
+   #page-stats td.sticky-col {
+     position: sticky;
+     left: 0;
+     background:#111827;  /* màu header hoặc #fff nếu muốn đè dữ liệu */
+     color:#fff;
+     overflow:hidden;
+     text-overflow:ellipsis;
+     white-space:nowrap;
+     z-index:40;
+   }
 
-    /* Sticky từng cột với width hợp lý */
-    #page-stats th:nth-child(1), #page-stats td:nth-child(1){ left:0; min-width:120px; z-index:22; }
-    #page-stats th:nth-child(2), #page-stats td:nth-child(2){ left:120px; min-width:150px; z-index:22; }
-    #page-stats th:nth-child(3), #page-stats td:nth-child(3){ left:270px; min-width:150px; z-index:22; }
+   /* Cột thứ 2 và 3 */
+   #page-stats th:nth-child(2), #page-stats td:nth-child(2){ left:120px; }
+   #page-stats th:nth-child(3), #page-stats td:nth-child(3){ left:270px; }
 
     /* Header 2 dòng sticky */
     #page-stats thead tr:first-child th { top:0; z-index:20; }
