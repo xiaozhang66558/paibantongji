@@ -456,6 +456,32 @@
       color:#2563eb;
       font-weight:700;
     }
+    /* ===== STICKY LEFT COLUMNS ===== */
+
+.sticky-col{
+  position:sticky;
+  left:0;
+  background:#fff;
+  z-index:3;
+}
+
+.sticky-col-header{
+  position:sticky;
+  left:0;
+  z-index:4;
+}
+    /* column offsets */
+
+th:nth-child(1), td:nth-child(1){ left:0 }
+th:nth-child(2), td:nth-child(2){ left:90px }
+th:nth-child(3), td:nth-child(3){ left:200px }
+th:nth-child(4), td:nth-child(4){ left:320px }
+th:nth-child(5), td:nth-child(5){ left:420px }
+th:nth-child(6), td:nth-child(6){ left:520px }
+th:nth-child(7), td:nth-child(7){ left:620px }
+th:nth-child(8), td:nth-child(8){ left:760px }
+th:nth-child(9), td:nth-child(9){ left:880px }
+th:nth-child(10), td:nth-child(10){ left:980px }
   </style>
 </head>
 
@@ -989,6 +1015,7 @@ function renderDashboard(){
 
   buildPosChart(posLabels, posCounts);
   buildTeamChart(teamLabels, teamCounts);
+  renderOrderStats();
 }
 
 function renderTeamOrPosSummary(fieldLabel, fieldName){
@@ -1398,7 +1425,7 @@ async function load(){
     applyFilters();
     populateStatsFilters();
     renderStatsPage();
-    renderOrderStats();   // thêm dòng này
+   
     
   }catch(err){
     console.error(err);
@@ -1677,6 +1704,24 @@ function renderOrderStats(){
 
 }
 // ===============================
+// SORT FOR STATS TABLE
+// ===============================
+
+let sortField = "";
+let sortDir = "desc";
+
+function sortStats(field){
+
+  if(sortField === field){
+    sortDir = sortDir === "desc" ? "asc" : "desc";
+  }else{
+    sortField = field;
+    sortDir = "desc";
+  }
+
+  renderStatsPage();
+}
+// ===============================
 // STATS PAGE
 // ===============================
 function populateStatsFilters(){
@@ -1722,7 +1767,7 @@ function renderStatsPage(){
   });
 
   // ✅ lọc theo FILTERED + 岗位 + khoảng ngày
-  const rows = Object.entries(ORDER_STATS || {})
+  let rows = Object.entries(ORDER_STATS || {})
     .filter(([id, v]) => {
       if(!allowedIds.has(id)) return false;
 
@@ -1739,6 +1784,36 @@ function renderStatsPage(){
       }
       return true;
     });
+  if(sortField){
+
+  rows.sort((a,b)=>{
+
+    const v1=a[1];
+    const v2=b[1];
+
+    let t1=0;
+    let t2=0;
+
+    activeDates.forEach(d=>{
+      t1 += v1?.[d]?.success || 0;
+      t2 += v2?.[d]?.success || 0;
+    });
+
+    if(sortField==="total"){
+      return sortDir==="desc" ? t2-t1 : t1-t2;
+    }
+
+    if(sortField==="avg"){
+      const a1 = activeDates.length ? t1/activeDates.length : 0;
+      const a2 = activeDates.length ? t2/activeDates.length : 0;
+      return sortDir==="desc" ? a2-a1 : a1-a2;
+    }
+
+    return 0;
+
+  });
+
+}
 
   els.pageStats.innerHTML = `
     <div class="card">
@@ -1757,16 +1832,21 @@ function renderStatsPage(){
         <table>
           <thead>
             <tr>
-              <th rowspan="2">ID</th>
-              <th rowspan="2">姓名</th>
-              <th rowspan="2">团队</th>
-              <th rowspan="2">班次</th>
-              <th rowspan="2">国家</th>
-              <th rowspan="2">岗位</th>
-              <th rowspan="2">盘口</th>
-              <th rowspan="2">入职时间</th>
-              <th rowspan="2">总</th>
-              <th rowspan="2">平均每天处理</th>
+              <th class="sticky-col-header" rowspan="2">ID</th>
+              <th class="sticky-col-header" rowspan="2">姓名</th>
+              <th class="sticky-col-header" rowspan="2">团队</th>
+              <th class="sticky-col-header" rowspan="2">班次</th>
+              <th class="sticky-col-header" rowspan="2">国家</th>
+              <th class="sticky-col-header" rowspan="2">岗位</th>
+              <th class="sticky-col-header" rowspan="2">盘口</th>
+              <th class="sticky-col-header" rowspan="2">入职时间</th>
+              <th class="sticky-col-header" rowspan="2" onclick="sortStats('total')" style="cursor:pointer">
+              总 ⬍
+              </th>
+
+              <th class="sticky-col-header" rowspan="2" onclick="sortStats('avg')" style="cursor:pointer">
+              平均每天处理 ⬍
+              </th>
               ${activeDates.map(d=>`<th colspan="2">${esc(d)}</th>`).join("")}
             </tr>
             <tr>
@@ -1798,16 +1878,16 @@ function renderStatsPage(){
 
               return `
                 <tr>
-                  <td>${esc(id)}</td>
-                  <td>${esc(name)}</td>
-                  <td>${esc(team)}</td>
-                  <td>${esc(shift)}</td>
-                  <td>${esc(country)}</td>
-                  <td>${esc(pos)}</td>
-                  <td class="pan-cell" onclick="showPan('${esc(pan)}')">${esc(pan)}</td>
-                  <td>${esc(join)}</td>
-                  <td>${total}</td>
-                  <td>${avg}</td>
+                  <td class="sticky-col">${esc(id)}</td>
+                  <td class="sticky-col">${esc(name)}</td>
+                  <td class="sticky-col">${esc(team)}</td>
+                  <td class="sticky-col">${esc(shift)}</td>
+                  <td class="sticky-col">${esc(country)}</td>
+                  <td class="sticky-col">${esc(pos)}</td>
+                  <td class="sticky-col pan-cell" onclick="showPan('${esc(pan)}')">${esc(pan)}</td>
+                  <td class="sticky-col">${esc(join)}</td>
+                  <td class="sticky-col">${total}</td>
+                  <td class="sticky-col">${avg}</td>
 
                   ${activeDates.map(d=>{
                     const day = v?.[d] || {success:0,reject:0};
