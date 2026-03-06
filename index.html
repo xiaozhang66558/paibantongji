@@ -456,6 +456,23 @@
       color:#2563eb;
       font-weight:700;
     }
+    /* Truncate nội dung ô dài, hiển thị ... nếu quá dài, click mở modal */
+    .statsTable td {
+      max-width:120px;           /* độ rộng tối đa */
+      overflow:hidden;           /* ẩn phần vượt ra ngoài */
+      text-overflow:ellipsis;    /* hiển thị dấu ... */
+      white-space:nowrap;        /* không xuống dòng */
+      cursor:pointer;            /* con trỏ thành tay khi hover */
+      color:#2563eb;             /* màu chữ link */
+      font-weight:700;
+    }
+    .statsTable td {
+      max-width: 120px;        /* chiều rộng tối đa */
+      overflow: hidden;        /* ẩn nội dung vượt */
+      text-overflow: ellipsis; /* hiển thị ... */
+      white-space: nowrap;     /* không xuống dòng */
+      cursor: pointer;         /* đổi con trỏ khi hover */
+    }
     /* =========================
        STICKY HEADER - 2 ROWS ĐỒNG NHẤT NỀN
     ========================= */
@@ -1915,7 +1932,7 @@ function renderStatsPage(){
       </div>
 
       <div class="tableWrap">
-        <table>
+        <table class="statsTable">
           <thead>
          <tr>
            <th>ID</th>
@@ -1999,7 +2016,7 @@ function renderStatsPage(){
   const toEl = document.getElementById("statsTo");
   if(toEl) toEl.onchange = renderStatsPage;
 }
-  // ===== SORTABLE TABLE FOR 总 & 平均每天处理 =====
+// ===== SORTABLE TABLE FOR 总 & 平均每天处理 =====
 document.addEventListener("click", e => {
   const th = e.target.closest("th");
   if(!th || !th.classList.contains("sortable")) return;
@@ -2016,6 +2033,20 @@ document.addEventListener("click", e => {
     const bVal = parseFloat(b.children[index].dataset.value || b.children[index].textContent) || 0;
     return th.asc ? aVal - bVal : bVal - aVal;
   });
+
+  rows.forEach(r => tbody.appendChild(r));
+});
+
+// ===== CLICK Ô TRONG STATS TABLE ĐỂ MỞ MODAL =====
+document.addEventListener("click", e => {
+  const td = e.target.closest(".statsTable td");
+  if(!td) return;
+
+  const content = td.textContent.trim();
+  if(!content) return;
+
+  openModal("Chi tiết ô", `<div style="padding:20px;font-size:16px">${esc(content)}</div>`);
+});
 
   rows.forEach(r => tbody.appendChild(r));
 });
