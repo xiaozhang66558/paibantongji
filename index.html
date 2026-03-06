@@ -503,41 +503,32 @@
 #page-stats table { border-collapse:collapse; min-width:max-content; }
 
 /* Sticky 2 row header */
-#page-stats thead tr:first-child th{
-  position: sticky; top:0;
-  background:#111827;
-  color:#fff;
+#page-stats thead tr:first-child th,
+#page-stats thead tr:nth-child(2) th {
+  position: sticky;
+  top: 0;
+  background: #111827;
+  color: #fff;
   z-index: 20;
-  text-align:left;
+  text-align: center; /* căn giữa */
 }
-#page-stats thead tr:nth-child(2) th{
-  position: sticky; top:36px;
-  background:#111827;
-  color:#fff;
+
+/* Cách đặt top cho row thứ 2 */
+#page-stats thead tr:nth-child(2) th {
+  top: 36px; /* hoặc height của row 1 */
   z-index: 21;
-  text-align:left;
 }
 
-/* Freeze first 3 columns */
-#page-stats th:nth-child(1), #page-stats td:nth-child(1){ 
-  position:sticky; left:0; z-index:22; background:#fff; min-width:130px;
-}
-#page-stats th:nth-child(2), #page-stats td:nth-child(2){ 
-  position:sticky; left:130px; z-index:22; background:#fff; min-width:160px;
-}
-#page-stats th:nth-child(3), #page-stats td:nth-child(3){ 
-  position:sticky; left:290px; z-index:22; background:#fff; min-width:140px;
-}
+/* Freeze 3 cột đầu */
+#page-stats th:nth-child(1),
+#page-stats td:nth-child(1){ position: sticky; left: 0; z-index: 22; background:#fff; }
+#page-stats th:nth-child(2),
+#page-stats td:nth-child(2){ position: sticky; left:130px; z-index: 22; background:#fff; }
+#page-stats th:nth-child(3),
+#page-stats td:nth-child(3){ position: sticky; left:290px; z-index: 22; background:#fff; }
 
-/* Ngăn đè chữ dữ liệu số liệu */
-#page-stats tbody td:nth-child(n+4){
-  min-width:60px;
-  text-align:right;
-  padding:2px 6px;
-}
-
-/* Hover row */
-#page-stats tbody tr:hover { background:#f7fbff; }
+/* Scroll xuống row vẫn nhìn thấy sticky header */
+#page-stats .tableWrap { overflow:auto; max-width:100%; max-height:70vh; } 
   </style>
 </head>
 
@@ -1851,17 +1842,20 @@ function renderStatsPage(){
         <table>
           <thead>
             <tr>
-              <th class="sticky-col-header">ID</th>
-              <th class="sticky-col-header">姓名</th>
-              <th class="sticky-col-header">团队</th>
-              <th>班次</th>
-              <th>国家</th>
-              <th>岗位</th>
-              <th>盘口</th>
-              <th>入职时间</th>
-              <th onclick="sortStats('total')" style="cursor:pointer">总 ⬍</th>
-              <th onclick="sortStats('avg')" style="cursor:pointer">平均每天处理 ⬍</th>
-              ${activeDates.map(d=>`<th>${esc(d)} 成功/驳回</th>`).join("")}
+              <th class="sticky-col-header" rowspan="2">ID</th>
+              <th class="sticky-col-header" rowspan="2">姓名</th>
+              <th class="sticky-col-header" rowspan="2">团队</th>
+              <th rowspan="2">班次</th>
+              <th rowspan="2">国家</th>
+              <th rowspan="2">岗位</th>
+              <th rowspan="2">盘口</th>
+              <th rowspan="2">入职时间</th>
+              <th rowspan="2" onclick="sortStats('total')" style="cursor:pointer">总 ⬍</th>
+              <th rowspan="2" onclick="sortStats('avg')" style="cursor:pointer">平均每天处理 ⬍</th>
+              ${activeDates.map(d=>`<th>${esc(d)}</th>`).join("")}
+            </tr>
+            <tr>
+              ${activeDates.map(()=>`<th>成功/驳回</th>`).join("")}
             </tr>
           </thead>
           <tbody>
