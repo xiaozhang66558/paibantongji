@@ -465,18 +465,20 @@
       position: relative;
     }
 
-    table thead tr:first-child th,
-    table thead tr:nth-child(2) th {
+    /* Hàng header đầu tiên */
+    table thead tr:first-child th {
       position: sticky;
-      top: 0; /* đầu tiên */
-      background: #0b1220; /* màu nền header */
-      color: #fff;
-      z-index: 20;
+      top: 0;        /* dính top */
+      z-index: 21;   /* cao hơn hàng thứ hai */
+      background: linear-gradient(180deg, #0b1220, #111827);
     }
 
+    /* Hàng header thứ hai */
     table thead tr:nth-child(2) th {
-      top: 40px; /* hoặc chiều cao hàng đầu tiên */
-      z-index: 19;
+      position: sticky;
+      top: 36px;     /* chiều cao hàng đầu tiên */
+      z-index: 20;
+      background: linear-gradient(180deg, #0b1220, #111827);
     }
     }
   </style>
@@ -1779,23 +1781,20 @@ function renderStatsPage(){
       <div class="tableWrap">
         <table>
           <thead>
-            <tr>
-              <th rowspan="2">ID</th>
-              <th rowspan="2">姓名</th>
-              <th rowspan="2">团队</th>
-              <th rowspan="2">班次</th>
-              <th rowspan="2">国家</th>
-              <th rowspan="2">岗位</th>
-              <th rowspan="2">盘口</th>
-              <th rowspan="2">入职时间</th>
-              <th rowspan="2">总</th>
-              <th rowspan="2">平均每天处理</th>
-              ${activeDates.map(d=>`<th colspan="2">${esc(d)}</th>`).join("")}
-            </tr>
-            <tr>
-              ${activeDates.map(()=>`<th>成功</th><th>驳回</th>`).join("")}
-            </tr>
-          </thead>
+         <tr>
+           <th>ID</th>
+           <th>姓名</th>
+           <th>团队</th>
+           <th>班次</th>
+           <th>国家</th>
+           <th>岗位</th>
+           <th>盘口</th>
+           <th>入职时间</th>
+           <th>总</th>
+           <th>平均每天处理</th>
+           ${activeDates.map(d=>`<th>${esc(d)}<br>成功</th><th>${esc(d)}<br>驳回</th>`).join("")}
+         </tr>
+       </thead>
           <tbody>
 
             ${rows.map(([id,v])=>{
