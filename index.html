@@ -799,7 +799,8 @@ function applyFilters(){
   renderEmployees();
   renderSchedule();
   renderPanPage();
-  renderStatsPage();
+  
+  ();
 }
 
 ["input","change"].forEach(evt=>{
@@ -1502,6 +1503,29 @@ async function load(){
     buildSelectOptions(els.countrySel, countries, "All 国家（国家）");
     buildSelectOptions(els.posSel, poss, "All positions（岗位）");
 
+    try {
+      const resErr = await fetch(ERROR_API);
+      ERROR_ROWS = await resErr.json();
+
+      ERROR_MAP.clear(); // xóa dữ liệu cũ
+      ERROR_ROWS.forEach(r => {
+        const id = (r["ID"]||"").trim();
+        if(!ERROR_MAP.has(id)) ERROR_MAP.set(id, []);
+
+        // chỉ giữ cột A→D
+        ERROR_MAP.get(id).push({
+          "ID": r["ID"] || "",
+          "会员/id /订单号": r["会员/id /订单号"] || "",
+          "工单号": r["工单号"] || "",
+          "Mistake Remark / 错误备注": r["Mistake Remark / 错误备注"] || ""
+        });
+      });
+    } catch(err) {
+      console.error("Load ERROR sheet failed", err);
+      ERROR_ROWS = [];
+      ERROR_MAP.clear();
+    }
+  
     applyFilters();
     populateStatsFilters();
     renderStatsPage();
