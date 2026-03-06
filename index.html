@@ -493,6 +493,9 @@
     }
 /* ================= STATS TABLE FIXED ================= */
 /* Table container */
+  <style>
+/* ================= STATS TABLE FIXED ================= */
+/* Table container */
 #page-stats .tableWrap { overflow:auto; max-width:100%; max-height:70vh; }
 
 /* Table fix layout */
@@ -509,112 +512,112 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-/* Sticky 3 cột đầu tiên */
-#page-stats th.sticky-col,
-#page-stats td.sticky-col {
-  position: sticky;
-  left: 0;
-  background:#111827; /* hoặc #fff nếu muốn đè dữ liệu */
-  color:#fff;
-  z-index: 30;
-}
-
-/* Cột 2 & 3 sticky */
-#page-stats th:nth-child(2), #page-stats td:nth-child(2){ left:120px; z-index:30; }
-#page-stats th:nth-child(3), #page-stats td:nth-child(3){ left:270px; z-index:30; }
-
-/* Sticky header row gộp 2 dòng */
-#page-stats thead tr th {
-  position: sticky;
-  top:0;
-  background:#111827;
-  color:#fff;
-  z-index: 20;
   text-align:center;
 }
 
-/* Pan-cell vẫn clickable */
-#page-stats .pan-cell {
-  cursor:pointer;
-  color:#2563eb;
-  font-weight:700;
-  text-overflow: ellipsis;
-  overflow:hidden;
-  max-width:120px;
-  background:#fff; /* đảm bảo đè lên header */
+/* Sticky 3 cột đầu tiên (ID / 姓名 / 团队) */
+#page-stats th.sticky-col, #page-stats td.sticky-col {
+  position: sticky;
+  background: #111827; /* màu cột đầu */
+  color: #fff;
+  z-index: 50; /* cao hơn header và dữ liệu */
 }
 
-/* Pan-cell vẫn clickable */
-#page-stats .pan-cell {
-  cursor:pointer;
+/* Left position từng cột */
+#page-stats th:nth-child(1), #page-stats td:nth-child(1){ left:0; }
+#page-stats th:nth-child(2), #page-stats td:nth-child(2){ left:120px; }
+#page-stats th:nth-child(3), #page-stats td:nth-child(3){ left:270px; }
+
+/* Header 2 dòng */
+#page-stats thead tr:first-child th { top:0; z-index:40; }
+#page-stats thead tr:nth-child(2) th { top:36px; z-index:41; }
+
+/* pan-cell vẫn clickable */
+#page-stats .pan-cell{
+  background:#fff;
   color:#2563eb;
   font-weight:700;
-  text-overflow: ellipsis;
+  cursor:pointer;
+  text-overflow:ellipsis;
   overflow:hidden;
-  max-width:120px;
-  background:#fff; /* tránh trùng màu header khi kéo */
+  white-space:nowrap;
 }
-  </style>
-</head>
-
-<body>
-<header>
-  <div class="brand">
-    HR System
-    <span class="badge"><span class="dot"></span> Public view</span>
-  </div>
-  <div class="badge">Google Sheet → opensheet</div>
-</header>
-
-<div class="wrap">
-  <div class="topTabs">
-    <div class="tab active" data-page="dashboard">总汇</div>
-    <div class="tab" data-page="employees">人员</div>
-    <div class="tab" data-page="schedule">排班表</div>
-    <div class="tab" data-page="pan">盘口人数</div>
-    <div class="tab" data-page="stats">统计</div>
-  </div>
-
-  <div class="filterBar" id="filterBar">
-    <input id="q" placeholder="Search name / ID / team / group / position / manager / 工作内容" />
-    <select id="shiftSel"></select>
-    <select id="teamSel"></select>
-    <select id="groupSel"></select>
-    <select id="posSel"></select>
-    <select id="countrySel"></select>
-    <select id="panSel"></select>
-    <div class="meta" id="meta">Loading…</div>
-  </div>
-
-  <!-- Dashboard -->
-  <div class="page active" id="page-dashboard"></div>
-
-  <!-- Employees -->
-  <div class="page" id="page-employees"></div>
-
-  <!-- Schedule -->
-  <div class="page" id="page-schedule"></div>
-  <div class="page" id="page-pan"></div>
-  <div class="page" id="page-stats"></div>
-</div>
-
-<!-- MODAL -->
-<div class="modal" id="modal">
-  <div class="box">
-    <div class="head">
-      <h3 id="modalTitle">Title</h3>
-      <div style="display:flex; gap:8px; align-items:center;">
-        <button class="btn" id="modalBack" style="display:none;">← Back</button>
-        <button class="x" id="modalClose">Close</button>
-      </div>
-    </div>
-    <div id="modalBody"></div>
-  </div>
-</div>
+</style>
 
 <script>
+function renderStatsPage() {
+  const datesAll = window.ORDER_DATES || [];
+  const dates = datesAll.slice(-30); // 30 ngày gần nhất
+
+  let rows = Object.entries(ORDER_STATS || {});
+  rows.sort((a,b)=>{
+    let t1=0, t2=0;
+    dates.forEach(d=>{
+      t1 += a[1]?.[d]?.success||0;
+      t2 += b[1]?.[d]?.success||0;
+    });
+    return t2-t1; // sort desc
+  });
+
+  const html = `
+  <div class="tableWrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="sticky-col" rowspan="2">ID</th>
+          <th class="sticky-col" rowspan="2">姓名</th>
+          <th class="sticky-col" rowspan="2">团队</th>
+          <th rowspan="2">班次</th>
+          <th rowspan="2">国家</th>
+          <th rowspan="2">岗位</th>
+          <th rowspan="2">盘口</th>
+          <th rowspan="2">入职时间</th>
+          <th rowspan="2">总</th>
+          <th rowspan="2">平均每天处理</th>
+          ${dates.map(d=>`<th colspan="2">${d}</th>`).join("")}
+        </tr>
+        <tr>
+          ${dates.map(()=>`<th>成功</th><th>驳回</th>`).join("")}
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(([id,v])=>{
+          const emp = FILTERED.find(r=>r["ID"]===id) || RAW.find(r=>r["ID"]===id);
+          const name = emp?.["姓名"]||"-";
+          const team = emp?.["团队"]||"-";
+          const shift = emp?.["班次"]||"-";
+          const country = emp?.["国家"]||"-";
+          const pos = emp?.["岗位"]||"-";
+          const pan = emp?.["盘口"]||"-";
+          const join = ACCOUNT_JOIN_DATE[id]||"-";
+
+          let total = 0;
+          dates.forEach(d=>total += v[d]?.success||0);
+          const avg = dates.length ? Math.round(total/dates.length) : 0;
+
+          return `
+          <tr>
+            <td class="sticky-col">${id}</td>
+            <td class="sticky-col">${name}</td>
+            <td class="sticky-col">${team}</td>
+            <td>${shift}</td>
+            <td>${country}</td>
+            <td>${pos}</td>
+            <td class="pan-cell" onclick="showPan('${pan}')">${pan}</td>
+            <td>${join}</td>
+            <td>${total}</td>
+            <td>${avg}</td>
+            ${dates.map(d=>`<td>${v[d]?.success||0}</td><td>${v[d]?.reject||0}</td>`).join("")}
+          </tr>
+          `;
+        }).join("")}
+      </tbody>
+    </table>
+  </div>
+  `;
+  els.pageStats.innerHTML = html;
+}
+</script>
 /* =========================================================
    CONFIG
    ========================================================= */
