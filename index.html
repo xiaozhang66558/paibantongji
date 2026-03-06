@@ -2106,9 +2106,9 @@ function renderStatsPage(){
                   ${activeDates.map(d=>{
 
                     const joinDate = normDateISO(ACCOUNT_JOIN_DATE[id] || "");
+                    const dayDate = normDateISO(d);   // chuẩn hóa ngày thống kê
 
-                    // nếu ngày xử lý trước ngày入职 thì hiển thị 0
-                    if(joinDate && d < joinDate){
+                    if(joinDate && dayDate < joinDate){
                       return `<td>0 / 0</td>`;
                     }
 
@@ -2117,9 +2117,6 @@ function renderStatsPage(){
                     return `<td>${day.success || 0} / ${day.reject || 0}</td>`;
 
                   }).join("")}
-                </tr>
-              `;
-            }).join("")}
 
           </tbody>
         </table>
