@@ -519,6 +519,25 @@ td {
       color: #ffffff;
       display: inline-block;
     }
+
+    /* ===== RESIZABLE TABLE COLUMNS ===== */
+    th {
+      position: relative;
+    }
+
+    .resizer {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 6px;
+      height: 100%;
+      cursor: col-resize;
+      user-select: none;
+    }
+
+    .resizer:hover {
+      background: rgba(255,255,255,0.3);
+    }
   </style>
 </head>
 
@@ -2074,6 +2093,48 @@ document.addEventListener("click", e => {
     openModal("Chi tiết ô", `<div style="padding:20px;font-size:16px; word-break: break-word;">${esc(td.textContent)}</div>`);
   }
 });
+
+  // ===== TABLE COLUMN RESIZE =====
+function makeTableResizable(table){
+
+  const cols = table.querySelectorAll("th");
+
+  cols.forEach((th, index)=>{
+
+    const resizer = document.createElement("div");
+    resizer.classList.add("resizer");
+    th.appendChild(resizer);
+
+    let startX, startWidth;
+
+    resizer.addEventListener("mousedown", e=>{
+      startX = e.pageX;
+      startWidth = th.offsetWidth;
+
+      document.addEventListener("mousemove", resizeColumn);
+      document.addEventListener("mouseup", stopResize);
+    });
+
+    function resizeColumn(e){
+      const newWidth = startWidth + (e.pageX - startX);
+
+      th.style.width = newWidth + "px";
+
+      table.querySelectorAll("tr").forEach(row=>{
+        if(row.children[index]){
+          row.children[index].style.width = newWidth + "px";
+        }
+      });
+    }
+
+    function stopResize(){
+      document.removeEventListener("mousemove", resizeColumn);
+      document.removeEventListener("mouseup", stopResize);
+    }
+
+  });
+
+}
 
 load();
 </script>
