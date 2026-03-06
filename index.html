@@ -2062,7 +2062,19 @@ function renderStatsPage(){
               });
 
               const avg = validDays ? Math.round(total / validDays) : 0;
-              const mistakeCount = MISTAKES.filter(m => (m["ID"] || "").trim() === id).length;
+              const mistakeCount = MISTAKES.filter(m => {
+
+              const mid = (m["ID"] || "").trim();
+              if(mid !== id) return false;
+
+              const date = (m["复查时间"] || "").slice(0,10);
+
+              if(fromDate && date < fromDate) return false;
+              if(toDate && date > toDate) return false;
+
+              return true;
+
+            }).length;
 
               return `
                 <tr>
