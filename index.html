@@ -562,15 +562,27 @@
   text-align: center;
 }
 
-/* Hàng 2: 成功 / 驳回 */
+/* ===== HÀNG 2: 成功 / 驳回 FIX ===== */
 #page-stats thead tr:nth-child(2) th {
   position: sticky;
   top: 36px; /* chiều cao row ngày */
   background: linear-gradient(180deg,#0b1220,#111827);
   color: #fff;
-  z-index: 7; /* cao hơn row 1 và tbody */
+  z-index: 7;
   text-align: center;
 }
+
+/* Thêm left cho từng th để không chạy lệch */
+#page-stats thead tr:nth-child(2) th:nth-child(1) { left:0; }       /* ID */
+#page-stats thead tr:nth-child(2) th:nth-child(2) { left:130px; }   /* 姓名 */
+#page-stats thead tr:nth-child(2) th:nth-child(3) { left:290px; }   /* 团队 */
+#page-stats thead tr:nth-child(2) th:nth-child(4) { left:430px; }   /* 班次 */
+#page-stats thead tr:nth-child(2) th:nth-child(5) { left:500px; }   /* 国家 */
+#page-stats thead tr:nth-child(2) th:nth-child(6) { left:570px; }   /* 岗位 */
+#page-stats thead tr:nth-child(2) th:nth-child(7) { left:640px; }   /* 盘口 */
+#page-stats thead tr:nth-child(2) th:nth-child(8) { left:710px; }   /* 入职时间 */
+#page-stats thead tr:nth-child(2) th:nth-child(9) { left:780px; }   /* 总 */
+#page-stats thead tr:nth-child(2) th:nth-child(10){ left:850px; }   /* 平均每天 */
 
 #page-stats tbody td:nth-child(n+11){
   width:40px;
