@@ -523,6 +523,35 @@
 
 /* Optional: hover highlight */
 #page-stats tbody tr:hover{ background: #f7fbff; }
+
+    /* ===== LIMIT TABLE WIDTH + HORIZONTAL SCROLL ===== */
+#page-stats .tableWrap {
+  overflow-x:auto;
+  max-width:100%;
+}
+
+#page-stats table {
+  min-width: max-content; /* giữ header không wrap */
+  border-collapse: collapse;
+  font-size:12px;
+}
+
+#page-stats th, #page-stats td {
+  white-space: nowrap;
+  text-align: center;
+}
+
+#page-stats th[colspan="2"] {
+  min-width: 35px; 
+  width: 35px;
+}
+
+#page-stats tbody td {
+  min-width: 35px; 
+  width: 35px;
+  font-size:10px; 
+  padding:2px 4px;
+}
   </style>
 </head>
 
@@ -1648,25 +1677,23 @@ async function loadOrderStats(){
 // ===============================
 
 function renderOrderStats(){
+  const datesAll = window.ORDER_DATES || [];
 
-  const dates = window.ORDER_DATES || [];   // thêm dòng này
+  // chỉ lấy 30 ngày gần nhất
+  const dates = datesAll.slice(-30);
 
   const rows = Object.entries(ORDER_STATS)
     .sort((a,b)=>{
-  const sum = obj => Object.values(obj)
-    .reduce((t,d)=>t+(d.success||0)+(d.reject||0),0);
-
-  return sum(b[1]) - sum(a[1]);
-});
+      const sum = obj => Object.values(obj)
+        .reduce((t,d)=>t+(d.success||0)+(d.reject||0),0);
+      return sum(b[1]) - sum(a[1]);
+    });
 
   const html = `
   <div class="card" id="orderStatsBox">
-
-    <h2>员工订单处理统计</h2>
-
+    <h2>员工订单处理统计（仅显示最近 30 天）</h2>
     <div class="tableWrap">
       <table>
-
         <thead>
         <tr>
           <th>ID</th>
@@ -1677,74 +1704,43 @@ function renderOrderStats(){
           <th>盘口</th>
           ${dates.map(d=>`<th colspan="2">${d}</th>`).join("")}
         </tr>
-
         <tr>
           <th colspan="6"></th>
-          ${dates.map(()=>`
-            <th>成功</th>
-            <th>驳回</th>
-          `).join("")}
+          ${dates.map(()=>`<th>成功</th><th>驳回</th>`).join("")}
         </tr>
         </thead>
-
         <tbody>
-
           ${rows.map(([id,v])=>{
+            const emp = FILTERED.find(r=>r["ID"]===id) || RAW.find(r=>r["ID"]===id);
+            const name = emp?.["姓名"] || "-";
+            const shift = emp?.["班次"] || "-";
+            const country = emp?.["国家"] || "-";
+            const pos = emp?.["岗位"] || "-";
+            const pan = emp?.["盘口"] || "-";
 
-          const emp = FILTERED.find(r=>r["ID"]===id) || RAW.find(r=>r["ID"]===id);
-
-          const name = emp?.["姓名"] || "-";
-          const shift = emp?.["班次"] || "-";
-          const country = emp?.["国家"] || "-";
-          const pos = emp?.["岗位"] || "-";
-          const pan = emp?.["盘口"] || "-";
-          const join = ACCOUNT_JOIN_DATE[id] || "-";
-          let total = 0;
-
-          dates.forEach(d=>{
-            const day = v[d] || {success:0,reject:0};
-            total += (day.success || 0);
-          });
-
-          const avg = dates.length ? Math.round(total / dates.length) : 0;
-
-          return `
-          <tr>
-
-          <td>${id}</td>
-          <td>${name}</td>
-          <td>${shift}</td>
-          <td>${country}</td>
-          <td>${pos}</td>
-          <td class="pan-cell" onclick="showPan(\`${pan}\`)">${pan}</td>
-
-          ${dates.map(d=>{
-            const day = v[d] || {success:0,reject:0};
             return `
-              <td>${day.success}</td>
-              <td>${day.reject}</td>
+            <tr>
+              <td>${id}</td>
+              <td>${name}</td>
+              <td>${shift}</td>
+              <td>${country}</td>
+              <td>${pos}</td>
+              <td class="pan-cell" onclick="showPan(\`${pan}\`)">${pan}</td>
+              ${dates.map(d=>{
+                const day = v[d] || {success:0,reject:0};
+                return `<td>${day.success}</td><td>${day.reject}</td>`;
+              }).join("")}
+            </tr>
             `;
           }).join("")}
-
-</tr>
-`;
-
-}).join("")}
-
         </tbody>
-
       </table>
     </div>
-
   </div>
   `;
 
   document.getElementById("orderStatsBox")?.remove();
-
-  document
-    .getElementById("page-dashboard")
-    .insertAdjacentHTML("beforeend", html);
-
+  document.getElementById("page-dashboard").insertAdjacentHTML("beforeend", html);
 }
 // ===============================
 // SORT FOR STATS TABLE
