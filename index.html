@@ -499,82 +499,43 @@
    STATS TABLE FIXED COLUMNS + DOUBLE HEADER
 ========================= */
 
-#page-stats .tableWrap {
-  overflow: auto;
-  max-width: 100%;
-}
+#page-stats .tableWrap { overflow:auto; max-width:100%; }
 
-#page-stats table {
-  border-collapse: collapse;
-  min-width: max-content; /* giữ header không wrap */
-  font-size: 12px;
-}
+#page-stats table { border-collapse:collapse; min-width:max-content; }
 
-#page-stats th,
-#page-stats td {
-  white-space: nowrap;
-  padding: 4px 6px;
-  text-align: left; /* cột đầu left align */
-}
-
-/* Freeze first 3 columns */
-#page-stats th:nth-child(1),
-#page-stats td:nth-child(1){ position: sticky; left:0; z-index:12; background:#fff; min-width:130px;}
-#page-stats th:nth-child(2),
-#page-stats td:nth-child(2){ position: sticky; left:130px; z-index:12; background:#fff; min-width:160px;}
-#page-stats th:nth-child(3),
-#page-stats td:nth-child(3){ position: sticky; left:290px; z-index:12; background:#fff; min-width:140px;}
-
-/* Double row header */
+/* === Sticky 2 row header === */
 #page-stats thead tr:first-child th{
   position: sticky; top:0;
-  background: linear-gradient(180deg,#0b1220,#111827);
+  background:#111827;
   color:#fff;
-  z-index:14;
-  text-align: left;
+  z-index: 20;
+  text-align:left;
 }
 #page-stats thead tr:nth-child(2) th{
-  position: sticky; top:36px; /* chiều cao row 1 */
-  background: linear-gradient(180deg,#0b1220,#111827);
+  position: sticky; top:36px;
+  background:#111827;
   color:#fff;
-  z-index:15;
-  text-align: left;
+  z-index: 21;
+  text-align:left;
 }
 
-/* Row 2: frozen first 3 columns z-index cao hơn */
-#page-stats thead tr:nth-child(2) th:nth-child(1){ left:0; z-index:16; }
-#page-stats thead tr:nth-child(2) th:nth-child(2){ left:130px; z-index:16; }
-#page-stats thead tr:nth-child(2) th:nth-child(3){ left:290px; z-index:16; }
+/* === Freeze first 3 columns (cả th lẫn td) === */
+#page-stats th:nth-child(1),
+#page-stats td:nth-child(1){ position:sticky; left:0; z-index:22; background:#fff; }
+#page-stats th:nth-child(2),
+#page-stats td:nth-child(2){ position:sticky; left:130px; z-index:22; background:#fff; }
+#page-stats th:nth-child(3),
+#page-stats td:nth-child(3){ position:sticky; left:290px; z-index:22; background:#fff; }
 
-/* Columns for date cells */
-#page-stats thead th[colspan="2"]{
-  width:80px;
-  min-width:80px;
-  max-width:80px;
+/* === Ngăn đè chữ: số liệu căn phải, padding vừa phải === */
+#page-stats tbody td:nth-child(n+4){
+  min-width:60px;
+  text-align:right;
+  padding:2px 6px;
 }
 
-/* Body cells for success/reject */
-#page-stats tbody td:nth-child(n+10){
-  text-align: right;
-  min-width:35px;
-  width:35px;
-  font-size:10px;
-  padding:2px 4px;
-}
-
-/* Hover row */
-#page-stats tbody tr:hover{ background: #f7fbff; }
-
-/* Optional: pan-cell */
-#page-stats td.pan-cell{
-  max-width:120px;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-  cursor:pointer;
-  color:#2563eb;
-  font-weight:700;
-}
+/* tbody tr hover */
+#page-stats tbody tr:hover { background:#f7fbff; }
   </style>
 </head>
 
