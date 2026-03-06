@@ -562,32 +562,60 @@
 /* Optional: hover highlight */
 #page-stats tbody tr:hover{ background: #f7fbff; }
 
-    /* ===== LIMIT TABLE WIDTH + HORIZONTAL SCROLL ===== */
+    /* =========================
+   PAGE STATS STICKY HEADER + COLUMNS
+========================= */
 #page-stats .tableWrap {
-  overflow-x:auto;
-  max-width:100%;
+  overflow-x: auto;
+  max-width: 100%;
 }
 
 #page-stats table {
   min-width: max-content; /* giữ header không wrap */
   border-collapse: collapse;
-  font-size:12px;
+  font-size: 12px;
 }
 
 #page-stats th, #page-stats td {
   white-space: nowrap;
-  text-align: center;
+  padding: 4px 6px;
 }
 
-#page-stats th[colspan="2"] {
-  min-width: 35px; 
-  width: 35px;
+/* Freeze first 3 columns */
+#page-stats th:nth-child(1),
+#page-stats td:nth-child(1){ position: sticky; left:0; z-index:12; background:#fff; min-width:130px; text-align:left;}
+#page-stats th:nth-child(2),
+#page-stats td:nth-child(2){ position: sticky; left:130px; z-index:12; background:#fff; min-width:160px; text-align:left;}
+#page-stats th:nth-child(3),
+#page-stats td:nth-child(3){ position: sticky; left:290px; z-index:12; background:#fff; min-width:140px; text-align:left;}
+
+/* Double row header */
+#page-stats thead tr:first-child th{
+  position: sticky; top:0;
+  background: linear-gradient(180deg,#0b1220,#111827);
+  color:#fff;
+  z-index:14;
+  text-align: left;
+}
+#page-stats thead tr:nth-child(2) th{
+  position: sticky; top:36px;
+  background: linear-gradient(180deg,#0b1220,#111827);
+  color:#fff;
+  z-index:15;
+  text-align: left;
 }
 
-#page-stats tbody td {
-  min-width: 35px; 
-  width: 35px;
-  font-size:10px; 
+/* Row 2: frozen first 3 columns z-index cao hơn */
+#page-stats thead tr:nth-child(2) th:nth-child(1){ left:0; z-index:16; }
+#page-stats thead tr:nth-child(2) th:nth-child(2){ left:130px; z-index:16; }
+#page-stats thead tr:nth-child(2) th:nth-child(3){ left:290px; z-index:16; }
+
+/* Các cột số liệu (成功 / 驳回) right-align */
+#page-stats tbody td:nth-child(n+10){
+  text-align: right;
+  min-width:35px;
+  width:35px;
+  font-size:10px;
   padding:2px 4px;
 }
   </style>
