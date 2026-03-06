@@ -2056,8 +2056,10 @@ function renderStatsPage(){
 
               activeDates.forEach(d => {
 
+                const dayDate = normDateISO(d);
+
                 // nếu ngày trước khi入职 → bỏ qua
-                dayDate < joinDate
+                if(joinDate && dayDate < joinDate){
                   return;
                 }
 
