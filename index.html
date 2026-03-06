@@ -473,8 +473,22 @@
     }
 
     table thead tr:nth-child(2) th {
-      top: 30px;        /* chiều cao hàng đầu tiên */
+      top: 30px;        /* chiều cao hàng đầu tiên, chỉnh nếu cần */
       z-index: 11;      /* nằm trên tbody nhưng dưới hàng 1 */
+    }
+
+    /* Đảm bảo bảng trong container scroll được */
+    .tableWrap {
+      overflow: auto;
+    }
+
+    /* Nếu bạn muốn, chỉnh font & padding để header rõ ràng */
+    table thead th {
+      padding: 10px 10px;
+      font-weight: 950;
+      letter-spacing: .2px;
+      white-space: nowrap;
+      text-align: center; /* giữ chữ ở giữa */
     }
   </style>
 </head>
