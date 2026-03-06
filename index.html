@@ -1661,7 +1661,7 @@ async function loadAccountMap(){
       .split("/")
       .map(a=>a.trim())
       .filter(Boolean);
-    const joinDate = normDateISO(r["入职时间"]);
+    const joinDate = (r["入职时间"] || "").trim();
 
     ACCOUNT_JOIN_DATE[id] = joinDate;
 
@@ -2052,7 +2052,7 @@ function renderStatsPage(){
               let total = 0;
               let validDays = 0;
 
-              const joinDate = normDateISO(ACCOUNT_JOIN_DATE[id] || "");
+              const joinDate = (ACCOUNT_JOIN_DATE[id] || "").slice(0,10);
 
               activeDates.forEach(d => {
                 const day = v?.[d] || {success:0, reject:0};
@@ -2097,7 +2097,7 @@ function renderStatsPage(){
 
                   ${activeDates.map(d=>{
 
-                    const joinDate = normDateISO(ACCOUNT_JOIN_DATE[id] || "");
+                    const joinDate = (ACCOUNT_JOIN_DATE[id] || "").slice(0,10);
 
                     // nếu ngày xử lý trước ngày入职 thì hiển thị 0
                     if(joinDate && d < joinDate){
