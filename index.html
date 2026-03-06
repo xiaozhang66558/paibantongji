@@ -2016,39 +2016,38 @@ function renderStatsPage(){
   const toEl = document.getElementById("statsTo");
   if(toEl) toEl.onchange = renderStatsPage;
 }
-// ===== SORTABLE TABLE FOR 总 & 平均每天处理 =====
+// ===== STATS TABLE: SORTABLE + CLICK MODAL =====
 document.addEventListener("click", e => {
-  const th = e.target.closest("th");
-  if(!th || !th.classList.contains("sortable")) return;
 
-  const table = th.closest("table");
-  const tbody = table.querySelector("tbody");
-  const index = Array.from(th.parentNode.children).indexOf(th);
+  // 1️⃣ Nếu click vào header có class "sortable" → sắp xếp
+  const th = e.target.closest("th.sortable");
+  if(th){
+    const table = th.closest("table");
+    const tbody = table.querySelector("tbody");
+    const index = Array.from(th.parentNode.children).indexOf(th);
 
-  th.asc = !th.asc; // toggle direction
+    th.asc = !th.asc; // toggle ascending/descending
 
-  const rows = Array.from(tbody.querySelectorAll("tr"));
-  rows.sort((a,b)=>{
-    const aVal = parseFloat(a.children[index].dataset.value || a.children[index].textContent) || 0;
-    const bVal = parseFloat(b.children[index].dataset.value || b.children[index].textContent) || 0;
-    return th.asc ? aVal - bVal : bVal - aVal;
-  });
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+    rows.sort((a,b)=>{
+      const aVal = parseFloat(a.children[index].dataset.value || a.children[index].textContent) || 0;
+      const bVal = parseFloat(b.children[index].dataset.value || b.children[index].textContent) || 0;
+      return th.asc ? aVal - bVal : bVal - aVal;
+    });
 
-  rows.forEach(r => tbody.appendChild(r));
-});
+    rows.forEach(r => tbody.appendChild(r));
+    return; // exit listener, tránh tiếp tục check td
+  }
 
-// ===== CLICK Ô TRONG STATS TABLE ĐỂ MỞ MODAL =====
-document.addEventListener("click", e => {
+  // 2️⃣ Nếu click vào ô trong statsTable → mở modal
   const td = e.target.closest(".statsTable td");
-  if(!td) return;
+  if(td){
+    const content = td.textContent.trim();
+    if(content){
+      openModal("Chi tiết ô", `<div style="padding:20px;font-size:16px">${esc(content)}</div>`);
+    }
+  }
 
-  const content = td.textContent.trim();
-  if(!content) return;
-
-  openModal("Chi tiết ô", `<div style="padding:20px;font-size:16px">${esc(content)}</div>`);
-});
-
-  rows.forEach(r => tbody.appendChild(r));
 });
 
 load();
