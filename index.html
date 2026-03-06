@@ -448,8 +448,9 @@
 
    /* ===== TABLE AUTO FIT ===== */
    .statsTable{
-     table-layout:fixed;
-     width:100%;
+     table-layout:auto;
+     width:max-content;
+     min-width:100%;
    }
 
    /* các cột bình thường */
@@ -460,16 +461,14 @@
    }
     .statsTable th:nth-child(9),
     .statsTable td:nth-child(9){
-      width:100px !important;
-      min-width:100px !important;
-      text-align:center;
+      min-width:90px !important;
+      width:90px !important;
     }
 
     .statsTable th:nth-child(10),
     .statsTable td:nth-child(10){
-      width:140px !important;
-      min-width:140px !important;
-      text-align:center;
+      min-width:130px !important;
+      width:130px !important;
     }
 
 /* ===== 盘口 column toàn hệ thống ===== */
@@ -529,9 +528,6 @@ td.pan-cell{
       cursor: pointer;
       user-select: none;
       position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
     }
 
     .sortable .sort-arrow {
