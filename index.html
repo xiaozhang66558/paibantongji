@@ -457,21 +457,36 @@
   font-weight: 700;
 }
 
-/* áp dụng cho bảng statsTable, tôn trọng max-width cột */
+/* ===== BẢNG STATS: TRUNCATE & CỐ ĐỊNH CỘT 盘口 ===== */
+
+/* áp dụng cho bảng statsTable, bắt buộc tôn trọng max-width cột */
 .statsTable {
-  table-layout: fixed;       /* quan trọng: bảng tôn trọng max-width của cột */
+  table-layout: fixed;       /* bắt buộc: bảng tôn trọng max-width của cột */
   width: 100%;
 }
 
-/* các ô bình thường trong statsTable đều có truncate nếu muốn */
+/* các ô bình thường trong statsTable đều truncate nếu muốn */
 .statsTable td {
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  cursor: pointer;
-  color: #2563eb;
+  max-width: 120px;          /* chiều rộng tối đa */
+  overflow: hidden;          
+  text-overflow: ellipsis;   
+  white-space: nowrap;       
+  cursor: pointer;           
+  color: #2563eb;            
   font-weight: 700;
+}
+
+/* riêng cột 盘口: width cố định để truncate chuẩn */
+.statsTable td.pan-cell {
+  width: 120px;              /* bắt buộc khi table-layout: fixed */
+  max-width: 120px;          
+  overflow: hidden;          
+  text-overflow: ellipsis;   
+  white-space: nowrap;       
+  cursor: pointer;           
+  color: #2563eb;            
+  font-weight: 700;
+  text-align: center;        /* canh giữa text */
 }
     /* =========================
        STICKY HEADER - 2 ROWS ĐỒNG NHẤT NỀN
