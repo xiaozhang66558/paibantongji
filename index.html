@@ -2025,6 +2025,10 @@ function renderStatsPage(){
              平均每天处理
              <span class="sort-arrow">⇅</span>
            </th>
+           <th class="sortable" data-value="mistake" style="min-width:90px">
+           错误次数
+           <span class="sort-arrow">⇅</span>
+           </th>
            ${activeDates.map(d => `<th>${esc(d)}<br>成功/驳回</th>`).join("")}
          </tr>
        </thead>
@@ -2056,6 +2060,7 @@ function renderStatsPage(){
               });
 
               const avg = validDays ? Math.round(total / validDays) : 0;
+              const mistakeCount = MISTAKES.filter(m => (m["ID"] || "").trim() === id).length;
 
               return `
                 <tr>
@@ -2069,6 +2074,10 @@ function renderStatsPage(){
                   <td>${esc(join)}</td>
                   <td class="sortable" data-value="${total}">${total}</td>
                   <td class="sortable" data-value="${avg}">${avg}</td>
+                  <td class="link sortable" data-value="${mistakeCount}" 
+                  onclick="openMistakeList('${id}')">
+                  ${mistakeCount}
+                  </td>
 
                   ${activeDates.map(d=>{
                     const day = v?.[d] || {success:0,reject:0};
@@ -2214,7 +2223,49 @@ function setColumnWidth(table, index, width){
       cell.style.maxWidth = width + "px";
     }
   });
+function openMistakeList(id){
 
+  const list = MISTAKES.filter(r => (r["ID"] || "").trim() === id);
+
+  if(!list.length){
+    openModal("错误记录", `<div style="padding:20px">该员工没有错误记录</div>`);
+    return;
+  }
+
+  const html = `
+  <div class="tableWrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>工单号</th>
+          <th>错误备注</th>
+          <th>正确操作方式</th>
+          <th>错误类型</th>
+          <th>扣分</th>
+          <th>质检人</th>
+          <th>质检时间</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${list.map(r=>`
+          <tr>
+            <td>${r["ID"]}</td>
+            <td>${r["工单号"]}</td>
+            <td>${r["错误备注"]}</td>
+            <td>${r["正确操作方式"]}</td>
+            <td>${r["错误类型"]}</td>
+            <td>${r["扣分"]}</td>
+            <td>${r["质检人"]}</td>
+            <td>${r["质检时间"]}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  </div>
+  `;
+
+  openModal("员工错误记录 - " + id, html);
 }
 load();
 
