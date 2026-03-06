@@ -2087,36 +2087,36 @@ function renderStatsPage(){
             }).length;
 
               return `
-                <tr>
-                  <td>${esc(id)}</td>
-                  <td>${esc(name)}</td>
-                  <td>${esc(team)}</td>
-                  <td>${esc(shift)}</td>
-                  <td>${esc(country)}</td>
-                  <td>${esc(pos)}</td>
-                  <td class="pan-cell" onclick="showFullContent('盘口', '${esc(pan)}')">${esc(pan)}</td>
-                  <td>${esc(join)}</td>
-                  <td class="sortable" data-value="${total}">${total}</td>
-                  <td class="sortable" data-value="${avg}">${avg}</td>
-                  <td class="link sortable" data-value="${mistakeCount}" 
-                  onclick="event.stopPropagation(); openMistakeList('${id}')">
-                  ${mistakeCount}
-                  </td>
+              <tr>
+                <td>${esc(id)}</td>
+                <td>${esc(name)}</td>
+                <td>${esc(team)}</td>
+                <td>${esc(shift)}</td>
+                <td>${esc(country)}</td>
+                <td>${esc(pos)}</td>
+                <td class="pan-cell" onclick="showFullContent('盘口','${esc(pan)}')">${esc(pan)}</td>
+                <td>${esc(join)}</td>
+                <td class="sortable" data-value="${total}">${total}</td>
+                <td class="sortable" data-value="${avg}">${avg}</td>
+                <td class="link sortable" data-value="${mistakeCount}" onclick="event.stopPropagation(); openMistakeList('${id}')">${mistakeCount}</td>
 
-                  ${activeDates.map(d=>{
+                ${activeDates.map(d=>{
 
-                    const joinDate = normDateISO(ACCOUNT_JOIN_DATE[id] || "");
-                    const dayDate = normDateISO(d);   // chuẩn hóa ngày thống kê
+                  const joinDate = normDateISO(ACCOUNT_JOIN_DATE[id] || "");
+                  const dayDate = normDateISO(d);
 
-                    if(joinDate && dayDate < joinDate){
-                      return `<td>0 / 0</td>`;
-                    }
+                  if(joinDate && dayDate < joinDate){
+                    return `<td>0 / 0</td>`;
+                  }
 
-                    const day = v?.[d] || {success:0,reject:0};
+                  const day = v?.[d] || {success:0,reject:0};
 
-                    return `<td>${day.success || 0} / ${day.reject || 0}</td>`;
+                  return `<td>${day.success || 0} / ${day.reject || 0}</td>`;
 
-                  }).join("")}
+                }).join("")}
+
+              </tr>
+              `;
 
           </tbody>
         </table>
