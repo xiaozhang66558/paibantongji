@@ -552,15 +552,23 @@
   min-width:80px;
   max-width:80px;
 }
-/* row 2 của header (成功 / 驳回) */
-#page-stats thead tr:nth-child(2) th {
-  width: 40px;
-  min-width: 40px;
+/* Hàng 1: ngày */
+#page-stats thead th[colspan] {
   position: sticky;
-  top: 36px; /* bằng chiều cao row header 1, chỉnh nếu row 1 cao hơn */
-  background: linear-gradient(180deg, #0b1220, #111827);
+  top: 0;
+  background: linear-gradient(180deg,#0b1220,#111827);
   color: #fff;
-  z-index: 7; /* cao hơn cell nội dung */
+  z-index: 6; /* thấp hơn hàng 2 nhưng cao hơn tbody */
+  text-align: center;
+}
+
+/* Hàng 2: 成功 / 驳回 */
+#page-stats thead tr:nth-child(2) th {
+  position: sticky;
+  top: 36px; /* chiều cao row ngày */
+  background: linear-gradient(180deg,#0b1220,#111827);
+  color: #fff;
+  z-index: 7; /* cao hơn row 1 và tbody */
   text-align: center;
 }
 
