@@ -1739,7 +1739,14 @@ async function loadMistakes(){
 }
 
 function renderMistakesPage(){
-  const rows = MISTAKES;
+
+  const allowedIds = new Set(
+    FILTERED.map(r => (r["ID"] || "").trim())
+  );
+
+  const rows = MISTAKES.filter(r =>
+    allowedIds.has((r["ID"] || "").trim())
+  );
 
   els.pageMistakes.innerHTML = `
     <div class="card">
