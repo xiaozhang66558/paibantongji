@@ -1808,7 +1808,7 @@ function renderStatsPage(){
            <th>入职时间</th>
            <th class="sortable" data-value="total">总 <span class="sort-arrow">⇅</span></th>
            <th class="sortable" data-value="avg">平均每天处理 <span class="sort-arrow">⇅</span></th>
-           ${activeDates.map(d=>`<th>${esc(d)}<br>成功</th><th>${esc(d)}<br>驳回</th>`).join("")}
+           ${activeDates.map(d => `<th>${esc(d)}<br>成功/驳回</th>`).join("")}
          </tr>
        </thead>
           <tbody>
@@ -1855,7 +1855,7 @@ function renderStatsPage(){
 
                   ${activeDates.map(d=>{
                     const day = v?.[d] || {success:0,reject:0};
-                    return `<td>${day.success || 0}</td><td>${day.reject || 0}</td>`;
+                    return `<td>${day.success || 0} / ${day.reject || 0}</td>`;
                   }).join("")}
                 </tr>
               `;
