@@ -481,21 +481,17 @@
       background: linear-gradient(180deg, #0b1220, #111827);
     }
     }
-    /* SORT ICON CHO CÁC CỘT */
+    /* ===== SORT ICON CHO CÁC CỘT ===== */
     .sortable {
       cursor: pointer;
       user-select: none;
       position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
     }
 
     .sortable .sort-arrow {
       font-size: 10px;
       margin-left: 4px;
-      color: #ffffff;
-      display: inline-block;
+      color: #fff;
     }
   </style>
 </head>
@@ -568,9 +564,6 @@ const ORDER_API =
 
 const ACCOUNT_API =
 "https://opensheet.elk.sh/1e38ZBHG0B0nxODaooPhgreG67A2RLxLxrpP8Sas_vZA/账号";
-
-const ERROR_API = "https://opensheet.vercel.app/1TEp-YzwjFKjorR4Xpmrb6UiKq2maMmawIW6oYQI75qM/员工错误";
-let ERROR_ROWS = [];
 
 /*
   Column mapping (by header names from your sheet):
@@ -722,29 +715,6 @@ els.modalBack.onclick = ()=>{
   openModal(prev.title, prev.html);
   els.modalBack.style.display = modalStack.length ? "inline-flex" : "none";
 };
-
-  function openErrorModal(id){
-  const rows = ERROR_ROWS.filter(r => (r["ID"]||"").trim() === id);
-  if(!rows.length){
-    openModal(`错误 - ${id}`, `<div class="note">No error records found</div>`);
-    return;
-  }
-
-  const cols = Object.keys(rows[0]).slice(0,12); // cột A→L
-  const html = `
-    <div class="tableWrap">
-      <table>
-        <thead>
-          <tr>${cols.map(c=>`<th>${esc(c)}</th>`).join("")}</tr>
-        </thead>
-        <tbody>
-          ${rows.map(r=>`<tr>${cols.map(c=>`<td>${esc(r[c]||"-")}</td>`).join("")}</tr>`).join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
-  openModal(`错误 - ${id}`, html);
-}
 
 /* =========================================================
    FILTERS
@@ -1423,14 +1393,6 @@ async function load(){
     
     els.meta.textContent = "Loading data from Google Sheet…";
 
-    try {
-      const resErr = await fetch(ERROR_API);
-      ERROR_ROWS = await resErr.json();
-    } catch(err) {
-      console.error("Load ERROR sheet failed", err);
-      ERROR_ROWS = [];
-    }
-
     const res = await fetch(SHEET_API, { cache:"no-store" });
     if(!res.ok) throw new Error("Fetch failed: " + res.status);
 
@@ -1840,10 +1802,18 @@ function renderStatsPage(){
            <th>岗位</th>
            <th>盘口</th>
            <th>入职时间</th>
-           <th class="sortable" data-value="total">总 <span class="sort-arrow">⇅</span></th>
-           <th class="sortable" data-value="avg">平均每天处理 <span class="sort-arrow">⇅</span></th>
-           <th>错误</th>
-           ${activeDates.map(d => `<th>${esc(d)}<br>成功/驳回</th>`).join("")}
+           <th class="sortable">
+           <th>入职时间</th>
+             总 <span class="sort-arrow">⇅</span>
+           <th>入职时间</th>
+           </th>
+           <th>入职时间</th>
+           <th class="sortable">
+           <th>入职时间</th>
+             平均每天处理 <span class="sort-arrow">⇅</span>
+           <th>入职时间</th>
+           </th>
+           ${activeDates.map(d=>`<th>${esc(d)}<br>成功</th><th>${esc(d)}<br>驳回</th>`).join("")}
          </tr>
        </thead>
           <tbody>
@@ -1862,18 +1832,12 @@ function renderStatsPage(){
               const join = ACCOUNT_JOIN_DATE[id] || "-";
 
               let total = 0;
-              let validDays = 0;
-
-              activeDates.forEach(d => {
-                const day = v?.[d] || {success:0, reject:0};
-                const dayTotal = (Number(day.success || 0) + Number(day.reject || 0));
-                if(dayTotal > 0){
-                  total += dayTotal;
-                  validDays += 1;
-                }
+              activeDates.forEach(d=>{
+                const day = v?.[d] || {success:0,reject:0};
+                total += Number(day.success || 0);
               });
 
-              const avg = validDays ? Math.round(total / validDays) : 0;
+              const avg = activeDates.length ? Math.round(total / activeDates.length) : 0;
 
               return `
                 <tr>
@@ -1888,15 +1852,13 @@ function renderStatsPage(){
                   <td class="sortable" data-value="${total}">${total}</td>
                   <td class="sortable" data-value="${avg}">${avg}</td>
 
-                  <td class="link" style="color:#2563eb; font-weight:700; cursor:pointer;"
-                      onclick="openErrorModal('${esc(id)}')">
-                    ${ERROR_ROWS.filter(r => (r["ID"]||"").trim()===id).length || 0}
-                  </td>
-
                   ${activeDates.map(d=>{
                     const day = v?.[d] || {success:0,reject:0};
                     return `<td>${day.success || 0}</td><td>${day.reject || 0}</td>`;
                   }).join("")}
+                </tr>
+              `;
+            }).join("")}
 
           </tbody>
         </table>
