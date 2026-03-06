@@ -2094,55 +2094,97 @@ document.addEventListener("click", e => {
   }
 });
 
-  // ===== TABLE COLUMN RESIZE =====
-function makeTableResizable(table){
+  // ===== EXCEL STYLE TABLE RESIZE =====
+function enableTableResize(){
 
-  const cols = table.querySelectorAll("th");
+  document.querySelectorAll("table").forEach((table, tableIndex)=>{
 
-  cols.forEach((th, index)=>{
+    const headers = table.querySelectorAll("th");
 
-    const resizer = document.createElement("div");
-    resizer.classList.add("resizer");
-    th.appendChild(resizer);
+    headers.forEach((th, colIndex)=>{
 
-    let startX, startWidth;
+      if(th.querySelector(".resizer")) return;
 
-    resizer.addEventListener("mousedown", e=>{
-      startX = e.pageX;
-      startWidth = th.offsetWidth;
+      const resizer = document.createElement("div");
+      resizer.className = "resizer";
+      th.appendChild(resizer);
 
-      document.addEventListener("mousemove", resizeColumn);
-      document.addEventListener("mouseup", stopResize);
-    });
+      const storageKey = "table_" + tableIndex + "_col_" + colIndex;
 
-    function resizeColumn(e){
-      const newWidth = startWidth + (e.pageX - startX);
+      // restore width
+      const saved = localStorage.getItem(storageKey);
+      if(saved){
+        setColumnWidth(table, colIndex, saved);
+      }
 
-      th.style.width = newWidth + "px";
+      let startX = 0;
+      let startWidth = 0;
 
-      table.querySelectorAll("tr").forEach(row=>{
-        if(row.children[index]){
-          row.children[index].style.width = newWidth + "px";
-        }
+      resizer.addEventListener("mousedown", e=>{
+        startX = e.pageX;
+        startWidth = th.offsetWidth;
+
+        document.addEventListener("mousemove", resize);
+        document.addEventListener("mouseup", stop);
       });
-    }
 
-    function stopResize(){
-      document.removeEventListener("mousemove", resizeColumn);
-      document.removeEventListener("mouseup", stopResize);
-    }
+      function resize(e){
+
+        const newWidth = startWidth + (e.pageX - startX);
+
+        if(newWidth < 60) return;
+
+        setColumnWidth(table, colIndex, newWidth);
+
+        localStorage.setItem(storageKey, newWidth);
+
+      }
+
+      function stop(){
+        document.removeEventListener("mousemove", resize);
+        document.removeEventListener("mouseup", stop);
+      }
+
+      // double click = auto fit
+      resizer.addEventListener("dblclick", ()=>{
+
+        let max = 80;
+
+        table.querySelectorAll("tr").forEach(row=>{
+          const cell = row.children[colIndex];
+          if(cell){
+            const width = cell.scrollWidth + 20;
+            if(width > max) max = width;
+          }
+        });
+
+        setColumnWidth(table, colIndex, max);
+        localStorage.setItem(storageKey, max);
+
+      });
+
+    });
 
   });
 
 }
 
+function setColumnWidth(table, index, width){
+
+  table.querySelectorAll("tr").forEach(row=>{
+    const cell = row.children[index];
+    if(cell){
+      cell.style.width = width + "px";
+      cell.style.maxWidth = width + "px";
+    }
+  });
+
+}
 load();
 
-setTimeout(() => {
-  document.querySelectorAll("table").forEach(table => {
-    makeTableResizable(table);
-  });
-}, 500);
+setTimeout(()=>{
+  enableTableResize();
+},800);
 </script>
 </body>
 </html>
