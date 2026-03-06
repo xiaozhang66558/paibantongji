@@ -225,7 +225,8 @@
       background:#fff;
     }
     table{
-      width:100%;
+      width:max-content;
+      min-width:100%;
       border-collapse:collapse;
       font-size:12px;
     }
@@ -456,18 +457,34 @@
       color:#2563eb;
       font-weight:700;
     }
-    /* ===== STICKY LEFT COLUMNS ===== */
+/* sticky offsets */
 
-.sticky-col{
-  position:sticky;
-  background:#fff;
-  z-index:3;
+th:nth-child(1), td:nth-child(1){
+  left:0;
 }
 
-.sticky-col-header{
-  position:sticky;
-  background:#0b1220;
-  z-index:4;
+th:nth-child(2), td:nth-child(2){
+  left:120px;
+}
+
+th:nth-child(3), td:nth-child(3){
+  left:280px;
+}
+    /* fixed width for frozen columns */
+
+th:nth-child(1), td:nth-child(1){
+  width:120px;
+  min-width:120px;
+}
+
+th:nth-child(2), td:nth-child(2){
+  width:160px;
+  min-width:160px;
+}
+
+th:nth-child(3), td:nth-child(3){
+  width:140px;
+  min-width:140px;
 }
 
 /* freeze first 3 columns */
@@ -1838,17 +1855,13 @@ function renderStatsPage(){
               <th class="sticky-col-header" rowspan="2">ID</th>
               <th class="sticky-col-header" rowspan="2">姓名</th>
               <th class="sticky-col-header" rowspan="2">团队</th>
-              <th class="sticky-col-header" rowspan="2">班次</th>
-              <th class="sticky-col-header" rowspan="2">国家</th>
-              <th class="sticky-col-header" rowspan="2">岗位</th>
-              <th class="sticky-col-header" rowspan="2">盘口</th>
-              <th class="sticky-col-header" rowspan="2">入职时间</th>
-              <th class="sticky-col-header" rowspan="2" onclick="sortStats('total')" style="cursor:pointer">
-              总 ⬍
-              </th>
-
-              <th class="sticky-col-header" rowspan="2" onclick="sortStats('avg')" style="cursor:pointer">
-              平均每天处理 ⬍
+              <th rowspan="2">班次</th>
+              <th rowspan="2">国家</th>
+              <th rowspan="2">岗位</th>
+              <th rowspan="2">盘口</th>
+              <th rowspan="2">入职时间</th>
+              <th rowspan="2" onclick="sortStats('total')" style="cursor:pointer">总 ⬍</th>
+              <th rowspan="2" onclick="sortStats('avg')" style="cursor:pointer">平均每天处理 ⬍</th>
               </th>
               ${activeDates.map(d=>`<th colspan="2">${esc(d)}</th>`).join("")}
             </tr>
@@ -1884,13 +1897,13 @@ function renderStatsPage(){
                   <td class="sticky-col">${esc(id)}</td>
                   <td class="sticky-col">${esc(name)}</td>
                   <td class="sticky-col">${esc(team)}</td>
-                  <td class="sticky-col">${esc(shift)}</td>
-                  <td class="sticky-col">${esc(country)}</td>
-                  <td class="sticky-col">${esc(pos)}</td>
-                  <td class="sticky-col pan-cell" onclick="showPan('${esc(pan)}')">${esc(pan)}</td>
-                  <td class="sticky-col">${esc(join)}</td>
-                  <td class="sticky-col">${total}</td>
-                  <td class="sticky-col">${avg}</td>
+                  <td>${esc(shift)}</td>
+                  <td>${esc(country)}</td>
+                  <td>${esc(pos)}</td>
+                  <td class="pan-cell" onclick="showPan('${esc(pan)}')">${esc(pan)}</td>
+                  <td>${esc(join)}</td>
+                  <td>${total}</td>
+                  <td>${avg}</td>
 
                   ${activeDates.map(d=>{
                     const day = v?.[d] || {success:0,reject:0};
