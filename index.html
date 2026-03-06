@@ -521,22 +521,32 @@ td {
     }
 
     /* ===== RESIZABLE TABLE COLUMNS ===== */
-    th {
+
+    th{
       position: relative;
     }
 
-    .resizer {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 6px;
-      height: 100%;
-      cursor: col-resize;
-      user-select: none;
+    /* thanh kéo cột */
+    .resizer{
+      position:absolute;
+      top:0;
+      right:-3px;
+      width:8px;
+      height:100%;
+      cursor:col-resize;
+      user-select:none;
+      background:rgba(0,0,0,0.08);
+      transition:background .15s;
     }
 
-    .resizer:hover {
-      background: rgba(255,255,255,0.3);
+    /* hover rõ hơn */
+    .resizer:hover{
+      background:#2563eb;
+    }
+
+    /* khi đang kéo */
+    .resizer.active{
+      background:#2563eb;
     }
   </style>
 </head>
