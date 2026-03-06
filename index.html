@@ -1790,8 +1790,8 @@ function renderStatsPage(){
            <th>岗位</th>
            <th>盘口</th>
            <th>入职时间</th>
-           <th>总</th>
-           <th>平均每天处理</th>
+           <th rowspan="1" class="sortable">总</th>
+           <th rowspan="1" class="sortable">平均每天处理</th>
            ${activeDates.map(d=>`<th>${esc(d)}<br>成功</th><th>${esc(d)}<br>驳回</th>`).join("")}
          </tr>
        </thead>
@@ -1828,8 +1828,8 @@ function renderStatsPage(){
                   <td>${esc(pos)}</td>
                   <td class="pan-cell" onclick="showPan('${esc(pan)}')">${esc(pan)}</td>
                   <td>${esc(join)}</td>
-                  <td>${total}</td>
-                  <td>${avg}</td>
+                  <td class="sortable" data-value="${total}">${total}</td>
+                  <td class="sortable" data-value="${avg}">${avg}</td>
 
                   ${activeDates.map(d=>{
                     const day = v?.[d] || {success:0,reject:0};
@@ -1857,7 +1857,26 @@ function renderStatsPage(){
   const toEl = document.getElementById("statsTo");
   if(toEl) toEl.onchange = renderStatsPage;
 }
-  
+  // ===== SORTABLE TABLE FOR 总 & 平均每天处理 =====
+document.addEventListener("click", e => {
+  const th = e.target.closest("th");
+  if(!th || !th.classList.contains("sortable")) return;
+
+  const table = th.closest("table");
+  const tbody = table.querySelector("tbody");
+  const index = Array.from(th.parentNode.children).indexOf(th);
+
+  th.asc = !th.asc; // toggle direction
+
+  const rows = Array.from(tbody.querySelectorAll("tr"));
+  rows.sort((a,b)=>{
+    const aVal = parseFloat(a.children[index].dataset.value || a.children[index].textContent) || 0;
+    const bVal = parseFloat(b.children[index].dataset.value || b.children[index].textContent) || 0;
+    return th.asc ? aVal - bVal : bVal - aVal;
+  });
+
+  rows.forEach(r => tbody.appendChild(r));
+});
 load();
 </script>
 </body>
