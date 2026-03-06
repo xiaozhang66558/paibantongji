@@ -225,8 +225,7 @@
       background:#fff;
     }
     table{
-      width:max-content;
-      min-width:100%;
+      width:100%;
       border-collapse:collapse;
       font-size:12px;
     }
@@ -324,29 +323,26 @@
       border:1px solid rgba(255,255,255,.12);
     }
 
+    /* modal */
     .modal{
-      position: fixed; inset:0;
+      position:fixed; inset:0;
       background: rgba(2,6,23,.55);
-      display: none;
-      display:flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 200;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:200;
       padding: 18px;
-      text-align: initial; /* bỏ center cưỡng bức */
     }
-
     .modal .box{
       width: min(1400px, 98vw);
       max-height: 92vh;
-      overflow: auto;
+      overflow:auto;
       background: rgba(255,255,255,.95);
       border: 1px solid rgba(255,255,255,.18);
       box-shadow: 0 20px 60px rgba(0,0,0,.35);
       border-radius: 22px;
       padding: 16px;
       backdrop-filter: blur(14px);
-      text-align: left; /* nội dung text modal left, click target ổn định */
     }
     .modal .head{
       display:flex; align-items:center; justify-content:space-between;
@@ -400,65 +396,33 @@
       border:1px solid #ccc;
     }
 
-    /* ===== FORCE CENTER ONLY CARDS / KPI / PILL ===== */
+    /* ===== FORCE CENTER ALL TEXT ===== */
     body,
     .card,
     .kpi,
     .tile,
     .empCard,
+    .modal .box,
     .note,
     .sub,
     .badge,
     .pill,
-    .btn {
-      text-align: center;
+    .btn,
+    table,
+    thead th,
+    tbody td {
+      text-align: center !important;
     }
 
-    /* Table layout cố định để tránh chữ đè */
-    #page-stats table {
-      table-layout: fixed;
-      width: max-content; /* giữ đủ ngang */
-      min-width: 1200px;
-    }
-
-   /* Sticky 3 cột đầu: ID / 姓名 / 团队 */
-   #page-stats th.sticky-col, 
-   #page-stats td.sticky-col {
-     position: sticky;
-     left: 0;
-     background:#111827;  /* màu header hoặc #fff nếu muốn đè dữ liệu */
-     color:#fff;
-     overflow:hidden;
-     text-overflow:ellipsis;
-     white-space:nowrap;
-     z-index:40;
-   }
-
-   /* Cột thứ 2 và 3 */
-   #page-stats th:nth-child(2), #page-stats td:nth-child(2){ left:120px; }
-   #page-stats th:nth-child(3), #page-stats td:nth-child(3){ left:270px; }
-
-    /* Header 2 dòng sticky */
-    #page-stats thead tr:first-child th { top:0; z-index:20; }
-    #page-stats thead tr:nth-child(2) th { top:36px; z-index:21; }
-
-    /* Nội dung dài trong cột */
-    #page-stats td {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      padding:6px 8px;
-    }
-
-    /* Pan-cell vẫn clickable nhưng không tràn */
-    #page-stats .pan-cell{
-      max-width:120px;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-      cursor:pointer;
-      color:#2563eb;
-      font-weight:700;
+    /* Center flex containers */
+    header,
+    .filterBar,
+    .topTabs,
+    .kpiRow,
+    .grid2,
+    .btnRow,
+    .empCard .row1 {
+      justify-content: center !important;
     }
 
     /* ===== GIỮ HEADER & FILTER NHƯ CŨ ===== */
@@ -492,128 +456,65 @@
       color:#2563eb;
       font-weight:700;
     }
-<!-- ====================== CSS STICKY 3 CỘT & HEADER 2 DÒNG ====================== -->
-<style>
-#page-stats .tableWrap { overflow:auto; max-width:100%; max-height:70vh; }
+  </style>
+</head>
 
-#page-stats table {
-  border-collapse:collapse;
-  min-width:max-content;
-  font-size:12px;
-  table-layout: fixed;
-}
+<body>
+<header>
+  <div class="brand">
+    HR System
+    <span class="badge"><span class="dot"></span> Public view</span>
+  </div>
+  <div class="badge">Google Sheet → opensheet</div>
+</header>
 
-#page-stats th, #page-stats td {
-  padding:6px 8px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-align:center;
-}
+<div class="wrap">
+  <div class="topTabs">
+    <div class="tab active" data-page="dashboard">总汇</div>
+    <div class="tab" data-page="employees">人员</div>
+    <div class="tab" data-page="schedule">排班表</div>
+    <div class="tab" data-page="pan">盘口人数</div>
+    <div class="tab" data-page="stats">统计</div>
+  </div>
 
-/* Sticky 3 cột đầu */
-#page-stats th.sticky-col, #page-stats td.sticky-col {
-  position: sticky;
-  background: #111827; 
-  color: #fff;
-  z-index: 60; /* cao hơn header */
-}
+  <div class="filterBar" id="filterBar">
+    <input id="q" placeholder="Search name / ID / team / group / position / manager / 工作内容" />
+    <select id="shiftSel"></select>
+    <select id="teamSel"></select>
+    <select id="groupSel"></select>
+    <select id="posSel"></select>
+    <select id="countrySel"></select>
+    <select id="panSel"></select>
+    <div class="meta" id="meta">Loading…</div>
+  </div>
 
-/* Left position cột đầu */
-#page-stats th:nth-child(1), #page-stats td:nth-child(1){ left:0; }
-#page-stats th:nth-child(2), #page-stats td:nth-child(2){ left:120px; }
-#page-stats th:nth-child(3), #page-stats td:nth-child(3){ left:270px; }
+  <!-- Dashboard -->
+  <div class="page active" id="page-dashboard"></div>
 
-/* Header 2 dòng */
-#page-stats thead tr:first-child th { top:0; z-index:50; }
-#page-stats thead tr:nth-child(2) th { top:36px; z-index:51; }
+  <!-- Employees -->
+  <div class="page" id="page-employees"></div>
 
-/* pan-cell vẫn clickable */
-#page-stats .pan-cell{
-  background:#fff;
-  color:#2563eb;
-  font-weight:700;
-  cursor:pointer;
-  text-overflow:ellipsis;
-  overflow:hidden;
-  white-space:nowrap;
-}
-</style>
+  <!-- Schedule -->
+  <div class="page" id="page-schedule"></div>
+  <div class="page" id="page-pan"></div>
+  <div class="page" id="page-stats"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="box">
+    <div class="head">
+      <h3 id="modalTitle">Title</h3>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="btn" id="modalBack" style="display:none;">← Back</button>
+        <button class="x" id="modalClose">Close</button>
+      </div>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
 
 <script>
-function renderStatsPage() {
-  const datesAll = window.ORDER_DATES || [];
-  const dates = datesAll.slice(-30); // 30 ngày gần nhất
-
-  let rows = Object.entries(ORDER_STATS || {});
-  rows.sort((a,b)=>{
-    let t1=0, t2=0;
-    dates.forEach(d=>{
-      t1 += a[1]?.[d]?.success||0;
-      t2 += b[1]?.[d]?.success||0;
-    });
-    return t2-t1; // sort desc
-  });
-
-  const html = `
-  <div class="tableWrap">
-    <table>
-      <thead>
-        <tr>
-          <th class="sticky-col" rowspan="2">ID</th>
-          <th class="sticky-col" rowspan="2">姓名</th>
-          <th class="sticky-col" rowspan="2">团队</th>
-          <th rowspan="2">班次</th>
-          <th rowspan="2">国家</th>
-          <th rowspan="2">岗位</th>
-          <th rowspan="2">盘口</th>
-          <th rowspan="2">入职时间</th>
-          <th rowspan="2">总</th>
-          <th rowspan="2">平均每天处理</th>
-          ${dates.map(d=>`<th colspan="2">${d}</th>`).join("")}
-        </tr>
-        <tr>
-          ${dates.map(()=>`<th>成功</th><th>驳回</th>`).join("")}
-        </tr>
-      </thead>
-      <tbody>
-        ${rows.map(([id,v])=>{
-          const emp = FILTERED.find(r=>r["ID"]===id) || RAW.find(r=>r["ID"]===id);
-          const name = emp?.["姓名"]||"-";
-          const team = emp?.["团队"]||"-";
-          const shift = emp?.["班次"]||"-";
-          const country = emp?.["国家"]||"-";
-          const pos = emp?.["岗位"]||"-";
-          const pan = emp?.["盘口"]||"-";
-          const join = ACCOUNT_JOIN_DATE[id]||"-";
-
-          let total = 0;
-          dates.forEach(d=>total += v[d]?.success||0);
-          const avg = dates.length ? Math.round(total/dates.length) : 0;
-
-          return `
-          <tr>
-            <td class="sticky-col">${id}</td>
-            <td class="sticky-col">${name}</td>
-            <td class="sticky-col">${team}</td>
-            <td>${shift}</td>
-            <td>${country}</td>
-            <td>${pos}</td>
-            <td class="pan-cell" onclick="showPan('${pan}')">${pan}</td>
-            <td>${join}</td>
-            <td>${total}</td>
-            <td>${avg}</td>
-            ${dates.map(d=>`<td>${v[d]?.success||0}</td><td>${v[d]?.reject||0}</td>`).join("")}
-          </tr>
-          `;
-        }).join("")}
-      </tbody>
-    </table>
-  </div>
-  `;
-  els.pageStats.innerHTML = html;
-}
-</script>
 /* =========================================================
    CONFIG
    ========================================================= */
@@ -752,32 +653,28 @@ els.tabs.forEach(t=>{
 let modalStack = [];
 
 function openModal(title, html){
-  // reset modal body trước
-  els.modalBody.innerHTML = ""; 
   els.modalTitle.textContent = title;
-  
+  els.modalBody.innerHTML = html;
   els.modal.style.display="flex";
   els.modalBack.style.display = modalStack.length ? "inline-flex" : "none";
 }
-
 function pushModal(title, html){
   modalStack.push({ title: els.modalTitle.textContent, html: els.modalBody.innerHTML });
+  els.modalBack.style.display = "inline-flex";
   openModal(title, html);
 }
-
 function closeModal(){
   els.modal.style.display="none";
   els.modalBody.innerHTML="";
   els.modalTitle.textContent="";
   modalStack = [];
-  els.modalBack.style.display="none";
+  els.modalBack.style.display = "none";
 }
-
 els.modalClose.onclick = closeModal;
 els.modal.onclick = (e)=>{ if(e.target === els.modal) closeModal(); };
 els.modalBack.onclick = ()=>{
   const prev = modalStack.pop();
-  if(!prev){ els.modalBack.style.display='none'; return; }
+  if(!prev){ els.modalBack.style.display="none"; return; }
   openModal(prev.title, prev.html);
   els.modalBack.style.display = modalStack.length ? "inline-flex" : "none";
 };
@@ -1092,7 +989,6 @@ function renderDashboard(){
 
   buildPosChart(posLabels, posCounts);
   buildTeamChart(teamLabels, teamCounts);
-  renderOrderStats();
 }
 
 function renderTeamOrPosSummary(fieldLabel, fieldName){
@@ -1188,13 +1084,7 @@ window.openPan = function(pan){
 
 /* thêm ngay dưới đây */
 function showPan(pan){
-  // Modal đẹp hơn, padding + font-size + text-left
-  openModal(`盘口详情: ${pan}`, `
-    <div style="padding:16px; font-size:14px; text-align:left;">
-      <p>盘口: <b>${pan}</b></p>
-      <p>点击表格查看详细员工名单</p>
-    </div>
-  `);
+  openModal("盘口详情", `<div style="padding:20px;font-size:16px">${pan}</div>`);
 }
 
 /* =========================================================
@@ -1508,7 +1398,7 @@ async function load(){
     applyFilters();
     populateStatsFilters();
     renderStatsPage();
-   
+    renderOrderStats();   // thêm dòng này
     
   }catch(err){
     console.error(err);
@@ -1690,23 +1580,25 @@ async function loadOrderStats(){
 // ===============================
 
 function renderOrderStats(){
-  const datesAll = window.ORDER_DATES || [];
 
-  // chỉ lấy 30 ngày gần nhất
-  const dates = datesAll.slice(-30);
+  const dates = window.ORDER_DATES || [];   // thêm dòng này
 
   const rows = Object.entries(ORDER_STATS)
     .sort((a,b)=>{
-      const sum = obj => Object.values(obj)
-        .reduce((t,d)=>t+(d.success||0)+(d.reject||0),0);
-      return sum(b[1]) - sum(a[1]);
-    });
+  const sum = obj => Object.values(obj)
+    .reduce((t,d)=>t+(d.success||0)+(d.reject||0),0);
+
+  return sum(b[1]) - sum(a[1]);
+});
 
   const html = `
-  <div class="card" id="orderStatsBox">
-    <h2>员工订单处理统计（仅显示最近 30 天）</h2>
+  <div class="card">
+
+    <h2>员工订单处理统计</h2>
+
     <div class="tableWrap">
       <table>
+
         <thead>
         <tr>
           <th>ID</th>
@@ -1717,61 +1609,72 @@ function renderOrderStats(){
           <th>盘口</th>
           ${dates.map(d=>`<th colspan="2">${d}</th>`).join("")}
         </tr>
+
         <tr>
           <th colspan="6"></th>
-          ${dates.map(()=>`<th>成功</th><th>驳回</th>`).join("")}
+          ${dates.map(()=>`
+            <th>成功</th>
+            <th>驳回</th>
+          `).join("")}
         </tr>
         </thead>
-        <tbody>
-          ${rows.map(([id,v])=>{
-            const emp = FILTERED.find(r=>r["ID"]===id) || RAW.find(r=>r["ID"]===id);
-            const name = emp?.["姓名"] || "-";
-            const shift = emp?.["班次"] || "-";
-            const country = emp?.["国家"] || "-";
-            const pos = emp?.["岗位"] || "-";
-            const pan = emp?.["盘口"] || "-";
 
+        <tbody>
+
+          ${rows.map(([id,v])=>{
+
+          const emp = FILTERED.find(r=>r["ID"]===id) || RAW.find(r=>r["ID"]===id);
+
+          const name = emp?.["姓名"] || "-";
+          const shift = emp?.["班次"] || "-";
+          const country = emp?.["国家"] || "-";
+          const pos = emp?.["岗位"] || "-";
+          const pan = emp?.["盘口"] || "-";
+          const join = ACCOUNT_JOIN_DATE[id] || "-";
+          let total = 0;
+
+          dates.forEach(d=>{
+            const day = v[d] || {success:0,reject:0};
+            total += (day.success || 0);
+          });
+
+          const avg = dates.length ? Math.round(total / dates.length) : 0;
+
+          return `
+          <tr>
+
+          <td>${id}</td>
+          <td>${name}</td>
+          <td>${shift}</td>
+          <td>${country}</td>
+          <td>${pos}</td>
+          <td class="pan-cell" onclick="showPan('${pan}')">${pan}</td>
+
+          ${dates.map(d=>{
+            const day = v[d] || {success:0,reject:0};
             return `
-            <tr>
-              <td>${id}</td>
-              <td>${name}</td>
-              <td>${shift}</td>
-              <td>${country}</td>
-              <td>${pos}</td>
-              <td class="pan-cell" onclick="showPan(\`${pan}\`)">${pan}</td>
-              ${dates.map(d=>{
-                const day = v[d] || {success:0,reject:0};
-                return `<td>${day.success}</td><td>${day.reject}</td>`;
-              }).join("")}
-            </tr>
+              <td>${day.success}</td>
+              <td>${day.reject}</td>
             `;
           }).join("")}
+
+</tr>
+`;
+
+}).join("")}
+
         </tbody>
+
       </table>
     </div>
+
   </div>
   `;
 
-  document.getElementById("orderStatsBox")?.remove();
-  document.getElementById("page-dashboard").insertAdjacentHTML("beforeend", html);
-}
-// ===============================
-// SORT FOR STATS TABLE
-// ===============================
+  document
+    .getElementById("page-dashboard")
+    .insertAdjacentHTML("beforeend", html);
 
-let sortField = "";
-let sortDir = "desc";
-
-function sortStats(field){
-
-  if(sortField === field){
-    sortDir = sortDir === "desc" ? "asc" : "desc";
-  }else{
-    sortField = field;
-    sortDir = "desc";
-  }
-
-  renderStatsPage();
 }
 // ===============================
 // STATS PAGE
@@ -1797,88 +1700,141 @@ function populateStatsFilters(){
   posSel.value = current;
 }
 
-function renderStatsPage() {
-  const datesAll = window.ORDER_DATES || [];
-  const dates = datesAll.slice(-30); // 30 ngày gần nhất
+function renderStatsPage(){
 
-  let rows = Object.entries(ORDER_STATS || {});
-  rows.sort((a,b)=>{
-    let t1=0, t2=0;
-    dates.forEach(d=>{
-      t1 += a[1]?.[d]?.success||0;
-      t2 += b[1]?.[d]?.success||0;
-    });
-    return t2-t1; // sort desc
+  const posFilter = document.getElementById("statsPos")?.value || "";
+  const fromDate = document.getElementById("statsFrom")?.value || "";
+  const toDate   = document.getElementById("statsTo")?.value || "";
+
+  const allowedIds = new Set(
+    (FILTERED || [])
+      .map(r => (r["ID"] || "").trim())
+      .filter(Boolean)
+  );
+
+  const dates = window.ORDER_DATES || [];
+
+  // ✅ chỉ lấy ngày nằm trong khoảng chọn
+  const activeDates = dates.filter(d=>{
+    if(fromDate && d < fromDate) return false;
+    if(toDate && d > toDate) return false;
+    return true;
   });
 
-  const html = `
-  <div class="tableWrap">
-    <table>
-      <thead>
-        <tr>
-          <th rowspan="2">ID</th>
-          <th rowspan="2">姓名</th>
-          <th rowspan="2">团队</th>
-          <th rowspan="2">班次</th>
-          <th rowspan="2">国家</th>
-          <th rowspan="2">岗位</th>
-          <th rowspan="2">盘口</th>
-          <th rowspan="2">入职时间</th>
-          <th rowspan="2">总</th>
-          <th rowspan="2">平均每天处理</th>
-          ${dates.map(d=>`<th colspan="2">${d}</th>`).join("")}
-        </tr>
-        <tr>
-          ${dates.map(()=>`<th>成功</th><th>驳回</th>`).join("")}
-        </tr>
-      </thead>
-      <tbody>
-        ${rows.map(([id,v])=>{
-          const emp = FILTERED.find(r=>r["ID"]===id) || RAW.find(r=>r["ID"]===id);
-          const name = emp?.["姓名"]||"-";
-          const team = emp?.["团队"]||"-";
-          const shift = emp?.["班次"]||"-";
-          const country = emp?.["国家"]||"-";
-          const pos = emp?.["岗位"]||"-";
-          const pan = emp?.["盘口"]||"-";
-          const join = ACCOUNT_JOIN_DATE[id]||"-";
+  // ✅ lọc theo FILTERED + 岗位 + khoảng ngày
+  const rows = Object.entries(ORDER_STATS || {})
+    .filter(([id, v]) => {
+      if(!allowedIds.has(id)) return false;
 
-          let total = 0;
-          dates.forEach(d=>total += v[d]?.success||0);
-          const avg = dates.length ? Math.round(total/dates.length) : 0;
+      const emp = FILTERED.find(r => (r["ID"] || "").trim() === id)
+               || RAW.find(r => (r["ID"] || "").trim() === id);
+      if(!emp) return false;
 
-          return `
-          <tr>
-            <td class="sticky-col">${id}</td>
-            <td class="sticky-col">${name}</td>
-            <td class="sticky-col">${team}</td>
-            <td>${shift}</td>
-            <td>${country}</td>
-            <td>${pos}</td>
-            <td class="pan-cell" onclick="showPan('${pan}')">${pan}</td>
-            <td>${join}</td>
-            <td>${total}</td>
-            <td>${avg}</td>
-            ${dates.map(d=>`<td>${v[d]?.success||0}</td><td>${v[d]?.reject||0}</td>`).join("")}
-          </tr>
-          `;
-        }).join("")}
-      </tbody>
-    </table>
-  </div>
+      if(posFilter && (emp["岗位"] || "") !== posFilter) return false;
+
+      // nếu chọn khoảng ngày thì ID này phải có ít nhất 1 ngày nằm trong khoảng
+      if(activeDates.length){
+        const ok = activeDates.some(d => (v && v[d]));
+        if(!ok) return false;
+      }
+      return true;
+    });
+
+  els.pageStats.innerHTML = `
+    <div class="card">
+      <h2>员工订单处理统计</h2>
+      <div class="sub">按员工 ID 汇总</div>
+
+      <div class="statsFilters">
+        <input type="date" id="statsFrom" value="${esc(fromDate)}" />
+        <input type="date" id="statsTo" value="${esc(toDate)}" />
+        <select id="statsPos">
+          <option value="">全部岗位</option>
+        </select>
+      </div>
+
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th rowspan="2">ID</th>
+              <th rowspan="2">姓名</th>
+              <th rowspan="2">团队</th>
+              <th rowspan="2">班次</th>
+              <th rowspan="2">国家</th>
+              <th rowspan="2">岗位</th>
+              <th rowspan="2">盘口</th>
+              <th rowspan="2">入职时间</th>
+              <th rowspan="2">总</th>
+              <th rowspan="2">平均每天处理</th>
+              ${activeDates.map(d=>`<th colspan="2">${esc(d)}</th>`).join("")}
+            </tr>
+            <tr>
+              ${activeDates.map(()=>`<th>成功</th><th>驳回</th>`).join("")}
+            </tr>
+          </thead>
+          <tbody>
+
+            ${rows.map(([id,v])=>{
+
+              const emp = FILTERED.find(r => (r["ID"] || "").trim() === id)
+                       || RAW.find(r => (r["ID"] || "").trim() === id);
+
+              const name = emp?.["姓名"] || "-";
+              const team = emp?.["团队"] || "-";
+              const shift = emp?.["班次"] || "-";
+              const country = emp?.["国家"] || "-";
+              const pos = emp?.["岗位"] || "-";
+              const pan = emp?.["盘口"] || "-";
+              const join = ACCOUNT_JOIN_DATE[id] || "-";
+
+              let total = 0;
+              activeDates.forEach(d=>{
+                const day = v?.[d] || {success:0,reject:0};
+                total += Number(day.success || 0);
+              });
+
+              const avg = activeDates.length ? Math.round(total / activeDates.length) : 0;
+
+              return `
+                <tr>
+                  <td>${esc(id)}</td>
+                  <td>${esc(name)}</td>
+                  <td>${esc(team)}</td>
+                  <td>${esc(shift)}</td>
+                  <td>${esc(country)}</td>
+                  <td>${esc(pos)}</td>
+                  <td class="pan-cell" onclick="showPan('${esc(pan)}')">${esc(pan)}</td>
+                  <td>${esc(join)}</td>
+                  <td>${total}</td>
+                  <td>${avg}</td>
+
+                  ${activeDates.map(d=>{
+                    const day = v?.[d] || {success:0,reject:0};
+                    return `<td>${day.success || 0}</td><td>${day.reject || 0}</td>`;
+                  }).join("")}
+                </tr>
+              `;
+            }).join("")}
+
+          </tbody>
+        </table>
+      </div>
+    </div>
   `;
-  els.pageStats.innerHTML = html;
-}
 
+  // ✅ populate xong rồi mới gắn lại value + onchange
   populateStatsFilters();
 
-  const elPos  = document.getElementById("statsPos");
-  const elFrom = document.getElementById("statsFrom");
-  const elTo   = document.getElementById("statsTo");
+  const posSel = document.getElementById("statsPos");
+  if(posSel) posSel.onchange = renderStatsPage;
 
-  if(elPos)  elPos.onchange  = renderStatsPage;
-  if(elFrom) elFrom.onchange = renderStatsPage;
-  if(elTo)   elTo.onchange   = renderStatsPage;
+  const fromEl = document.getElementById("statsFrom");
+  if(fromEl) fromEl.onchange = renderStatsPage;
+
+  const toEl = document.getElementById("statsTo");
+  if(toEl) toEl.onchange = renderStatsPage;
+}
   
 load();
 </script>
