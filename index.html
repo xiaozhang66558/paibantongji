@@ -1793,65 +1793,46 @@ function renderStatsPage(){
   );
 
   const datesAll = window.ORDER_DATES || [];
+  const dates = datesAll.slice(-30); // 30 ngày gần nhất
 
-  // chỉ lấy 30 ngày gần nhất
-  const dates = datesAll.slice(-30);
-
-  // ✅ chỉ lấy ngày nằm trong khoảng chọn
   const activeDates = dates.filter(d=>{
     if(fromDate && d < fromDate) return false;
     if(toDate && d > toDate) return false;
     return true;
   });
 
-  // ✅ lọc theo FILTERED + 岗位 + khoảng ngày
   let rows = Object.entries(ORDER_STATS || {})
     .filter(([id, v]) => {
       if(!allowedIds.has(id)) return false;
-
       const emp = FILTERED.find(r => (r["ID"] || "").trim() === id)
                || RAW.find(r => (r["ID"] || "").trim() === id);
       if(!emp) return false;
-
       if(posFilter && (emp["岗位"] || "") !== posFilter) return false;
-
-      // nếu chọn khoảng ngày thì ID này phải có ít nhất 1 ngày nằm trong khoảng
       if(activeDates.length){
         const ok = activeDates.some(d => v?.[d]);
         if(!ok) return false;
       }
       return true;
     });
+
   if(sortField){
+    rows.sort((a,b)=>{
+      const v1=a[1], v2=b[1];
+      let t1=0, t2=0;
+      activeDates.forEach(d=>{
+        t1 += v1?.[d]?.success || 0;
+        t2 += v2?.[d]?.success || 0;
+      });
 
-  rows.sort((a,b)=>{
-
-    const v1=a[1];
-    const v2=b[1];
-
-    let t1=0;
-    let t2=0;
-
-    activeDates.forEach(d=>{
-      t1 += v1?.[d]?.success || 0;
-      t2 += v2?.[d]?.success || 0;
+      if(sortField==="total") return sortDir==="desc" ? t2-t1 : t1-t2;
+      if(sortField==="avg") {
+        const a1 = activeDates.length ? t1/activeDates.length : 0;
+        const a2 = activeDates.length ? t2/activeDates.length : 0;
+        return sortDir==="desc" ? a2-a1 : a1-a2;
+      }
+      return 0;
     });
-
-    if(sortField==="total"){
-      return sortDir==="desc" ? t2-t1 : t1-t2;
-    }
-
-    if(sortField==="avg"){
-      const a1 = activeDates.length ? t1/activeDates.length : 0;
-      const a2 = activeDates.length ? t2/activeDates.length : 0;
-      return sortDir==="desc" ? a2-a1 : a1-a2;
-    }
-
-    return 0;
-
-  });
-
-}
+  }
 
   els.pageStats.innerHTML = `
     <div class="card">
@@ -1870,26 +1851,21 @@ function renderStatsPage(){
         <table>
           <thead>
             <tr>
-              <th class="sticky-col-header" rowspan="2">ID</th>
-              <th class="sticky-col-header" rowspan="2">姓名</th>
-              <th class="sticky-col-header" rowspan="2">团队</th>
-              <th rowspan="2">班次</th>
-              <th rowspan="2">国家</th>
-              <th rowspan="2">岗位</th>
-              <th rowspan="2">盘口</th>
-              <th rowspan="2">入职时间</th>
-              <th rowspan="2" onclick="sortStats('total')" style="cursor:pointer">总 ⬍</th>
-              <th rowspan="2" onclick="sortStats('avg')" style="cursor:pointer">平均每天处理 ⬍</th>
-              ${activeDates.map(d=>`<th colspan="2">${esc(d)}</th>`).join("")}
-            </tr>
-            <tr>
-              ${activeDates.map(()=>`<th>成功</th><th>驳回</th>`).join("")}
+              <th class="sticky-col-header">ID</th>
+              <th class="sticky-col-header">姓名</th>
+              <th class="sticky-col-header">团队</th>
+              <th>班次</th>
+              <th>国家</th>
+              <th>岗位</th>
+              <th>盘口</th>
+              <th>入职时间</th>
+              <th onclick="sortStats('total')" style="cursor:pointer">总 ⬍</th>
+              <th onclick="sortStats('avg')" style="cursor:pointer">平均每天处理 ⬍</th>
+              ${activeDates.map(d=>`<th>${esc(d)} 成功/驳回</th>`).join("")}
             </tr>
           </thead>
           <tbody>
-
             ${rows.map(([id,v])=>{
-
               const emp = FILTERED.find(r => (r["ID"] || "").trim() === id)
                        || RAW.find(r => (r["ID"] || "").trim() === id);
 
@@ -1921,30 +1897,25 @@ function renderStatsPage(){
                   <td>${esc(join)}</td>
                   <td>${total}</td>
                   <td>${avg}</td>
-
                   ${activeDates.map(d=>{
                     const day = v?.[d] || {success:0,reject:0};
-                    return `<td>${day.success || 0}</td><td>${day.reject || 0}</td>`;
+                    return `<td>${day.success || 0} / ${day.reject || 0}</td>`;
                   }).join("")}
                 </tr>
               `;
             }).join("")}
-
           </tbody>
         </table>
       </div>
     </div>
   `;
 
-  // ✅ populate xong rồi mới gắn lại value + onchange
   populateStatsFilters();
 
   const posSel = document.getElementById("statsPos");
   if(posSel) posSel.onchange = renderStatsPage;
-
   const fromEl = document.getElementById("statsFrom");
   if(fromEl) fromEl.onchange = renderStatsPage;
-
   const toEl = document.getElementById("statsTo");
   if(toEl) toEl.onchange = renderStatsPage;
 }
