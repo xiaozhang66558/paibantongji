@@ -457,8 +457,8 @@
       font-weight:700;
     }
     /* =========================
-       STICKY HEADER BẢNG (2 hàng) - tất cả tables
-       ========================= */
+       STICKY HEADER - 2 ROWS ĐỒNG NHẤT NỀN
+    ========================= */
     .tableWrap {
       overflow: auto;
       position: relative; /* quan trọng để sticky hoạt động */
@@ -467,21 +467,20 @@
     table thead th {
       position: sticky;
       top: 0;          
-      z-index: 10;
-      background: linear-gradient(180deg, #0b1220, #111827);
+      z-index: 20;
+      background: linear-gradient(180deg, #0b1220, #111827); /* toàn bộ nền đen */
       color: #fff;
       text-align: center;
-      padding: 10px;
+      padding: 10px 10px;
+      border-bottom: 1px solid #222; /* optional, làm rõ viền */
     }
 
-    table thead tr:first-child th {
-      top: 0;
-      z-index: 12;
-    }
-
+    /* loại bỏ việc tách top row / second row */
+    table thead tr:first-child th,
     table thead tr:nth-child(2) th {
-      top: 40px; /* tăng từ 30px lên 40px để phù hợp với header Stats cao hơn */
-      z-index: 11;
+      top: 0;  /* tất cả đều top:0 */
+      z-index: 20;
+    }
     }
   </style>
 </head>
