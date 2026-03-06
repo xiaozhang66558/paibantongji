@@ -457,38 +457,31 @@
       font-weight:700;
     }
     /* =========================
-       STICKY HEADER BẢNG (2 hàng)
+       STICKY HEADER BẢNG (2 hàng) - tất cả tables
        ========================= */
+    .tableWrap {
+      overflow: auto;
+      position: relative; /* quan trọng để sticky hoạt động */
+    }
+
     table thead th {
       position: sticky;
-      top: 0;           /* hàng đầu tiên dính trên cùng */
-      z-index: 10;      /* luôn ở trên các ô khác */
+      top: 0;          
+      z-index: 10;
       background: linear-gradient(180deg, #0b1220, #111827);
       color: #fff;
+      text-align: center;
+      padding: 10px;
     }
 
     table thead tr:first-child th {
       top: 0;
-      z-index: 12;      /* hàng trên cùng luôn cao nhất */
+      z-index: 12;
     }
 
     table thead tr:nth-child(2) th {
-      top: 30px;        /* chiều cao hàng đầu tiên, chỉnh nếu cần */
-      z-index: 11;      /* nằm trên tbody nhưng dưới hàng 1 */
-    }
-
-    /* Đảm bảo bảng trong container scroll được */
-    .tableWrap {
-      overflow: auto;
-    }
-
-    /* Nếu bạn muốn, chỉnh font & padding để header rõ ràng */
-    table thead th {
-      padding: 10px 10px;
-      font-weight: 950;
-      letter-spacing: .2px;
-      white-space: nowrap;
-      text-align: center; /* giữ chữ ở giữa */
+      top: 40px; /* tăng từ 30px lên 40px để phù hợp với header Stats cao hơn */
+      z-index: 11;
     }
   </style>
 </head>
