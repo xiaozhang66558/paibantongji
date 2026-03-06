@@ -458,6 +458,15 @@
      padding:8px 10px;
      white-space:nowrap;
    }
+    .statsTable th:nth-child(9),
+    .statsTable td:nth-child(9){
+      min-width:90px;
+    }
+
+    .statsTable th:nth-child(10),
+    .statsTable td:nth-child(10){
+      min-width:120px;
+    }
 
 /* ===== 盘口 column toàn hệ thống ===== */
 
@@ -1925,7 +1934,7 @@ function populateStatsFilters(){
   const posSel = document.getElementById("statsPos");
   if(!posSel) return;
 
-  const current = posSel.value || "";
+  const current = posSel.dataset.selected || posSel.value || "";
 
   const poss = [...new Set((RAW || []).map(r => r["岗位"]).filter(Boolean))]
     .sort((a,b)=>a.localeCompare(b,"zh"));
@@ -1990,8 +1999,8 @@ function renderStatsPage(){
       <div class="statsFilters">
         <input type="date" id="statsFrom" value="${esc(fromDate)}" />
         <input type="date" id="statsTo" value="${esc(toDate)}" />
-        <select id="statsPos">
-          <option value="">全部岗位</option>
+        <select id="statsPos" data-selected="${esc(posFilter)}">
+        <option value="">全部岗位</option>
         </select>
       </div>
 
