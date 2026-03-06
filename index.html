@@ -2027,12 +2027,16 @@ document.addEventListener("click", e => {
     <div class="card">
       <h2>员工错误统计</h2>
       <div class="sub">可搜索/筛选 / 点击 ID 弹窗显示详细信息</div>
-      <input type="text" id="mistakeSearch" placeholder="Search ID / 姓名 / 工单号 / 岗位 / 盘口" style="margin-bottom:10px; padding:6px 10px; border-radius:6px; border:1px solid #ccc; width:250px" />
+      <input type="text" id="mistakeSearch" placeholder="Search ID / 姓名 / 工单号 / 岗位 / 盘口" style="margin-bottom:10px; padding:6px 10px; border-radius:6px; border:1px solid #ccc; width:300px" />
       <div class="tableWrap">
         <table>
           <thead>
             <tr>
               <th>ID</th>
+              <th>姓名</th>
+              <th>团队</th>
+              <th>岗位</th>
+              <th>盘口</th>
               <th>会员/id /订单号</th>
               <th>工单号</th>
               <th>Mistake Remark 错误备注</th>
@@ -2050,6 +2054,10 @@ document.addEventListener("click", e => {
             ${rows.map(r=>`
               <tr>
                 <td class="link" onclick="openModal('员工错误详情', renderFullTable([r]))">${esc(r["ID"])}</td>
+                <td>${esc(r["姓名"])}</td>
+                <td>${esc(r["团队"])}</td>
+                <td>${esc(r["岗位"])}</td>
+                <td>${esc(r["盘口"])}</td>
                 <td>${esc(r["会员/id /订单号"])}</td>
                 <td>${esc(r["工单号"])}</td>
                 <td>${esc(r["Mistake Remark 错误备注"])}</td>
@@ -2078,7 +2086,7 @@ document.addEventListener("click", e => {
       tr.style.display = text.includes(q) ? "" : "none";
     });
   };
-}
+}  
 
   function renderMistakesPage(){
   const rows = MISTAKES;
