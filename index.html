@@ -500,10 +500,9 @@
 ========================= */
 
 #page-stats .tableWrap { overflow:auto; max-width:100%; }
-
 #page-stats table { border-collapse:collapse; min-width:max-content; }
 
-/* === Sticky 2 row header === */
+/* Sticky 2 row header */
 #page-stats thead tr:first-child th{
   position: sticky; top:0;
   background:#111827;
@@ -519,22 +518,25 @@
   text-align:left;
 }
 
-/* === Freeze first 3 columns (cả th lẫn td) === */
-#page-stats th:nth-child(1),
-#page-stats td:nth-child(1){ position:sticky; left:0; z-index:22; background:#fff; }
-#page-stats th:nth-child(2),
-#page-stats td:nth-child(2){ position:sticky; left:130px; z-index:22; background:#fff; }
-#page-stats th:nth-child(3),
-#page-stats td:nth-child(3){ position:sticky; left:290px; z-index:22; background:#fff; }
+/* Freeze first 3 columns */
+#page-stats th:nth-child(1), #page-stats td:nth-child(1){ 
+  position:sticky; left:0; z-index:22; background:#fff; min-width:130px;
+}
+#page-stats th:nth-child(2), #page-stats td:nth-child(2){ 
+  position:sticky; left:130px; z-index:22; background:#fff; min-width:160px;
+}
+#page-stats th:nth-child(3), #page-stats td:nth-child(3){ 
+  position:sticky; left:290px; z-index:22; background:#fff; min-width:140px;
+}
 
-/* === Ngăn đè chữ: số liệu căn phải, padding vừa phải === */
+/* Ngăn đè chữ dữ liệu số liệu */
 #page-stats tbody td:nth-child(n+4){
   min-width:60px;
   text-align:right;
   padding:2px 6px;
 }
 
-/* tbody tr hover */
+/* Hover row */
 #page-stats tbody tr:hover { background:#f7fbff; }
   </style>
 </head>
@@ -733,28 +735,32 @@ els.tabs.forEach(t=>{
 let modalStack = [];
 
 function openModal(title, html){
+  // reset modal body trước
+  els.modalBody.innerHTML = ""; 
   els.modalTitle.textContent = title;
-  els.modalBody.innerHTML = html;
+  
   els.modal.style.display="flex";
   els.modalBack.style.display = modalStack.length ? "inline-flex" : "none";
 }
+
 function pushModal(title, html){
   modalStack.push({ title: els.modalTitle.textContent, html: els.modalBody.innerHTML });
-  els.modalBack.style.display = "inline-flex";
   openModal(title, html);
 }
+
 function closeModal(){
   els.modal.style.display="none";
   els.modalBody.innerHTML="";
   els.modalTitle.textContent="";
   modalStack = [];
-  els.modalBack.style.display = "none";
+  els.modalBack.style.display="none";
 }
+
 els.modalClose.onclick = closeModal;
 els.modal.onclick = (e)=>{ if(e.target === els.modal) closeModal(); };
 els.modalBack.onclick = ()=>{
   const prev = modalStack.pop();
-  if(!prev){ els.modalBack.style.display="none"; return; }
+  if(!prev){ els.modalBack.style.display='none'; return; }
   openModal(prev.title, prev.html);
   els.modalBack.style.display = modalStack.length ? "inline-flex" : "none";
 };
