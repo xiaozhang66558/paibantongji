@@ -456,6 +456,15 @@
       color:#2563eb;
       font-weight:700;
     }
+    .truncate-cell {
+      max-width: 150px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: pointer;
+      color: #2563eb;
+      font-weight: 700;
+    }
     /* Truncate nội dung ô dài, hiển thị ... nếu quá dài, click mở modal */
     .statsTable td {
       max-width:120px;           /* độ rộng tối đa */
@@ -664,6 +673,9 @@ function esc(str){
     .replaceAll(">","&gt;")
     .replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
+}
+  function showFullContent(title, content){
+  openModal(title, `<div style="padding:20px; font-size:16px; word-break: break-all;">${esc(content)}</div>`);
 }
 
 /* =========================================================
@@ -1724,7 +1736,9 @@ function renderMistakesPage(){
                 <td>${esc(r["团队"])}</td>
                 <td>${esc(r["岗位"])}</td>
                 <td>${esc(r["盘口"])}</td>
-                <td>${esc(r["会员/id /订单号"])}</td>
+                <td class="truncate-cell" onclick="showFullContent('会员/id /订单号', '${esc(r["会员/id /订单号"])}')">
+                  ${esc(r["会员/id /订单号"])}
+                </td>
                 <td>${esc(r["工单号"])}</td>
                 <td>${esc(r["错误备注"])}</td>
                 <td>${esc(r["正确操作方式"])}</td>
@@ -1985,7 +1999,7 @@ function renderStatsPage(){
                   <td>${esc(shift)}</td>
                   <td>${esc(country)}</td>
                   <td>${esc(pos)}</td>
-                  <td class="pan-cell" onclick="showPan('${esc(pan)}')">${esc(pan)}</td>
+                  <td class="truncate-cell" onclick="showFullContent('盘口', '${esc(pan)}')">${esc(pan)}</td>
                   <td>${esc(join)}</td>
                   <td class="sortable" data-value="${total}">${total}</td>
                   <td class="sortable" data-value="${avg}">${avg}</td>
