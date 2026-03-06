@@ -1893,7 +1893,7 @@ function renderOrderStats(){
             const joinDate = normDateISO(ACCOUNT_JOIN_DATE[id] || "");
 
             activeDates.forEach(d => {
-
+          
               const dayDate = normDateISO(d);
 
               if(joinDate && new Date(dayDate) < new Date(joinDate)){
@@ -1914,7 +1914,7 @@ function renderOrderStats(){
 
             const mistakeCount = MISTAKES.filter(m => {
 
-             const mid = (m["ID"] || "").trim();
+              const mid = (m["ID"] || "").trim();
               if(mid !== id) return false;
 
               const date = (m["复检时间"] || "").slice(0,10);
