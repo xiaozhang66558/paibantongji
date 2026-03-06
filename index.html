@@ -495,62 +495,36 @@
       color:#2563eb;
       font-weight:700;
     }
-/* ===== TABLE FIX FOR STATS ===== */
-#page-stats .tableWrap {
-  overflow-x: auto;
-  overflow-y: auto;
-  max-height: 70vh;
-  display: block;
-  border-radius: 16px;
-  border:1px solid rgba(15,23,42,.08);
-  background:#fff;
-}
+/* ================= STATS TABLE IMPROVED ================= */
+#page-stats .tableWrap { overflow:auto; max-width:100%; max-height:70vh; }
+#page-stats table { border-collapse:collapse; min-width:max-content; font-size:12px; table-layout: fixed; }
 
-#page-stats table {
-  border-collapse: collapse;
-  min-width: max-content;
-  width: 100%;
-  table-layout: fixed;
-}
-
-#page-stats thead tr:first-child th,
-#page-stats thead tr:nth-child(2) th {
-  position: sticky;
-  top: 0;
-  background: #111827;
-  color: #fff;
-  z-index: 100;
-  text-align: center;
-  border-bottom:1px solid #444;
-}
-
-/* Freeze 3 first columns */
-#page-stats th.sticky-col-header,
-#page-stats td.sticky-col {
-  position: sticky;
-  left: 0;
-  background: #fff;
-  z-index: 101;
-}
-
-#page-stats th:nth-child(2),
-#page-stats td:nth-child(2){ left:130px; z-index:101; }
-#page-stats th:nth-child(3),
-#page-stats td:nth-child(3){ left:290px; z-index:101; }
-
-/* Align text center for date columns */
-#page-stats td, #page-stats th { padding:6px 8px; white-space: nowrap; }
-#page-stats td:not(.sticky-col) { text-align: center; }
-
-/* pan-cell highlight */
-.pan-cell {
-  cursor: pointer;
-  color:#2563eb;
-  font-weight:700;
+#page-stats th, #page-stats td {
+  padding:6px 8px;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
 }
+
+#page-stats th.sticky-col-header,
+#page-stats td.sticky-col {
+  position: sticky;
+  background:#fff;
+  z-index:12;
+}
+
+#page-stats th:nth-child(1), #page-stats td:nth-child(1){ left:0; min-width:120px; }
+#page-stats th:nth-child(2), #page-stats td:nth-child(2){ left:120px; min-width:200px; }
+#page-stats th:nth-child(3), #page-stats td:nth-child(3){ left:320px; min-width:120px; }
+
+/* Sticky 2-row header */
+#page-stats thead tr:first-child th { position: sticky; top:0; z-index:20; background:#111827; color:#fff; text-align:center; }
+#page-stats thead tr:nth-child(2) th { position: sticky; top:36px; z-index:21; background:#111827; color:#fff; text-align:center; }
+#page-stats thead tr:nth-child(2) th:nth-child(1){ left:0; z-index:22; }
+#page-stats thead tr:nth-child(2) th:nth-child(2){ left:120px; z-index:22; }
+#page-stats thead tr:nth-child(2) th:nth-child(3){ left:320px; z-index:22; }
+
+#page-stats .pan-cell { cursor:pointer; color:#2563eb; font-weight:700; text-overflow: ellipsis; overflow:hidden; max-width:120px; }
   </style>
 </head>
 
@@ -1793,132 +1767,78 @@ function populateStatsFilters(){
   posSel.value = current;
 }
 
-function renderStatsPage(){
-  const posFilter = document.getElementById("statsPos")?.value || "";
-  const fromDate = document.getElementById("statsFrom")?.value || "";
-  const toDate   = document.getElementById("statsTo")?.value || "";
-
-  const allowedIds = new Set(
-    (FILTERED || []).map(r => (r["ID"] || "").trim()).filter(Boolean)
-  );
-
+function renderStatsPage() {
   const datesAll = window.ORDER_DATES || [];
-  const dates = datesAll.slice(-30);
-  const activeDates = dates.filter(d=>{
-    if(fromDate && d < fromDate) return false;
-    if(toDate && d > toDate) return false;
-    return true;
-  });
+  const dates = datesAll.slice(-30); // 30 ngày gần nhất
 
-  let rows = Object.entries(ORDER_STATS || {}).filter(([id,v])=>{
-    if(!allowedIds.has(id)) return false;
-    const emp = FILTERED.find(r => r["ID"]===id) || RAW.find(r => r["ID"]===id);
-    if(!emp) return false;
-    if(posFilter && (emp["岗位"] || "") !== posFilter) return false;
-    if(activeDates.length){
-      const ok = activeDates.some(d => v?.[d]);
-      if(!ok) return false;
-    }
-    return true;
-  });
-
-  if(sortField){
-    rows.sort((a,b)=>{
-      const v1=a[1], v2=b[1];
-      let t1=0, t2=0;
-      activeDates.forEach(d=>{
-        t1 += v1?.[d]?.success || 0;
-        t2 += v2?.[d]?.success || 0;
-      });
-
-      if(sortField==="total") return sortDir==="desc" ? t2-t1 : t1-t2;
-      if(sortField==="avg") {
-        const a1 = activeDates.length ? t1/activeDates.length : 0;
-        const a2 = activeDates.length ? t2/activeDates.length : 0;
-        return sortDir==="desc" ? a2-a1 : a1-a2;
-      }
-      return 0;
+  let rows = Object.entries(ORDER_STATS || {});
+  rows.sort((a,b)=>{
+    let t1=0, t2=0;
+    dates.forEach(d=>{
+      t1 += a[1]?.[d]?.success||0;
+      t2 += b[1]?.[d]?.success||0;
     });
-  }
+    return t2-t1; // sort desc
+  });
 
   const html = `
-  <div class="card">
-    <h2>员工订单处理统计</h2>
-    <div class="sub">按员工 ID 汇总</div>
+  <div class="tableWrap">
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2">ID</th>
+          <th rowspan="2">姓名</th>
+          <th rowspan="2">团队</th>
+          <th rowspan="2">班次</th>
+          <th rowspan="2">国家</th>
+          <th rowspan="2">岗位</th>
+          <th rowspan="2">盘口</th>
+          <th rowspan="2">入职时间</th>
+          <th rowspan="2">总</th>
+          <th rowspan="2">平均每天处理</th>
+          ${dates.map(d=>`<th colspan="2">${d}</th>`).join("")}
+        </tr>
+        <tr>
+          ${dates.map(()=>`<th>成功</th><th>驳回</th>`).join("")}
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(([id,v])=>{
+          const emp = FILTERED.find(r=>r["ID"]===id) || RAW.find(r=>r["ID"]===id);
+          const name = emp?.["姓名"]||"-";
+          const team = emp?.["团队"]||"-";
+          const shift = emp?.["班次"]||"-";
+          const country = emp?.["国家"]||"-";
+          const pos = emp?.["岗位"]||"-";
+          const pan = emp?.["盘口"]||"-";
+          const join = ACCOUNT_JOIN_DATE[id]||"-";
 
-    <div class="statsFilters">
-      <input type="date" id="statsFrom" value="${esc(fromDate)}" />
-      <input type="date" id="statsTo" value="${esc(toDate)}" />
-      <select id="statsPos">
-        <option value="">全部岗位</option>
-      </select>
-    </div>
+          let total = 0;
+          dates.forEach(d=>total += v[d]?.success||0);
+          const avg = dates.length ? Math.round(total/dates.length) : 0;
 
-    <div class="tableWrap">
-      <table>
-        <thead>
+          return `
           <tr>
-            <th class="sticky-col-header" rowspan="2">ID</th>
-            <th class="sticky-col-header" rowspan="2">姓名</th>
-            <th class="sticky-col-header" rowspan="2">团队</th>
-            <th rowspan="2">班次</th>
-            <th rowspan="2">国家</th>
-            <th rowspan="2">岗位</th>
-            <th rowspan="2">盘口</th>
-            <th rowspan="2">入职时间</th>
-            <th rowspan="2" onclick="sortStats('total')" style="cursor:pointer">总 ⬍</th>
-            <th rowspan="2" onclick="sortStats('avg')" style="cursor:pointer">平均每天处理 ⬍</th>
-            ${activeDates.map(d=>`<th colspan="2">${esc(d)}</th>`).join("")}
+            <td class="sticky-col">${id}</td>
+            <td class="sticky-col">${name}</td>
+            <td class="sticky-col">${team}</td>
+            <td>${shift}</td>
+            <td>${country}</td>
+            <td>${pos}</td>
+            <td class="pan-cell" onclick="showPan('${pan}')">${pan}</td>
+            <td>${join}</td>
+            <td>${total}</td>
+            <td>${avg}</td>
+            ${dates.map(d=>`<td>${v[d]?.success||0}</td><td>${v[d]?.reject||0}</td>`).join("")}
           </tr>
-          <tr>
-            ${activeDates.map(()=>`<th>成功</th><th>驳回</th>`).join("")}
-          </tr>
-        </thead>
-        <tbody>
-          ${rows.map(([id,v])=>{
-            const emp = FILTERED.find(r => r["ID"]===id) || RAW.find(r => r["ID"]===id);
-            const name = emp?.["姓名"] || "-";
-            const team = emp?.["团队"] || "-";
-            const shift = emp?.["班次"] || "-";
-            const country = emp?.["国家"] || "-";
-            const pos = emp?.["岗位"] || "-";
-            const pan = emp?.["盘口"] || "-";
-            const join = ACCOUNT_JOIN_DATE[id] || "-";
-
-            let total = 0;
-            activeDates.forEach(d=>{
-              const day = v?.[d] || {success:0,reject:0};
-              total += Number(day.success || 0);
-            });
-
-            const avg = activeDates.length ? Math.round(total / activeDates.length) : 0;
-
-            return `
-              <tr>
-                <td class="sticky-col">${esc(id)}</td>
-                <td class="sticky-col">${esc(name)}</td>
-                <td class="sticky-col">${esc(team)}</td>
-                <td>${esc(shift)}</td>
-                <td>${esc(country)}</td>
-                <td>${esc(pos)}</td>
-                <td class="pan-cell" onclick="showPan('${esc(pan)}')">${esc(pan)}</td>
-                <td>${esc(join)}</td>
-                <td>${total}</td>
-                <td>${avg}</td>
-                ${activeDates.map(d=>{
-                  const day = v?.[d] || {success:0,reject:0};
-                  return `<td>${day.success || 0}</td><td>${day.reject || 0}</td>`;
-                }).join("")}
-              </tr>
-            `;
-          }).join("")}
-        </tbody>
-      </table>
-    </div>
+          `;
+        }).join("")}
+      </tbody>
+    </table>
   </div>
   `;
-
   els.pageStats.innerHTML = html;
+}
 
   populateStatsFilters();
 
