@@ -2055,12 +2055,20 @@ function renderStatsPage(){
               const joinDate = normDateISO(ACCOUNT_JOIN_DATE[id] || "");
 
               activeDates.forEach(d => {
+
+                // nếu ngày trước khi入职 → bỏ qua
+                if(joinDate && d < joinDate){
+                  return;
+                }
+
                 const day = v?.[d] || {success:0, reject:0};
                 const dayTotal = (Number(day.success || 0) + Number(day.reject || 0));
+
                 if(dayTotal > 0){
                   total += dayTotal;
                   validDays += 1;
                 }
+
               });
 
               const avg = validDays ? Math.round(total / validDays) : 0;
