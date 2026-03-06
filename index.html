@@ -1827,12 +1827,18 @@ function renderStatsPage(){
               const join = ACCOUNT_JOIN_DATE[id] || "-";
 
               let total = 0;
-              activeDates.forEach(d=>{
-                const day = v?.[d] || {success:0,reject:0};
-                total += Number(day.success || 0);
+              let validDays = 0;
+
+              activeDates.forEach(d => {
+                const day = v?.[d] || {success:0, reject:0};
+                const dayTotal = (Number(day.success || 0) + Number(day.reject || 0));
+                if(dayTotal > 0){
+                  total += dayTotal;
+                  validDays += 1;
+                }
               });
 
-              const avg = activeDates.length ? Math.round(total / activeDates.length) : 0;
+              const avg = validDays ? Math.round(total / validDays) : 0;
 
               return `
                 <tr>
