@@ -495,44 +495,62 @@
       color:#2563eb;
       font-weight:700;
     }
-/* =========================
-   STATS TABLE FIXED COLUMNS + DOUBLE HEADER
-========================= */
-
-#page-stats .tableWrap { overflow:auto; max-width:100%; }
-#page-stats table { border-collapse:collapse; min-width:max-content; }
-
-/* Sticky 2 dòng header */
-#page-stats thead tr:first-child th {
-  position: sticky;
-  top:0;
-  z-index:20;
-  background:#111827;
-  color:#fff;
-  text-align:center;
-  border-bottom:1px solid #444;
+/* ===== TABLE FIX FOR STATS ===== */
+#page-stats .tableWrap {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 70vh;
+  display: block;
+  border-radius: 16px;
+  border:1px solid rgba(15,23,42,.08);
+  background:#fff;
 }
 
+#page-stats table {
+  border-collapse: collapse;
+  min-width: max-content;
+  width: 100%;
+  table-layout: fixed;
+}
+
+#page-stats thead tr:first-child th,
 #page-stats thead tr:nth-child(2) th {
   position: sticky;
-  top:36px; /* height của row1 header */
-  z-index:21;
-  background:#111827;
-  color:#fff;
-  text-align:center;
+  top: 0;
+  background: #111827;
+  color: #fff;
+  z-index: 100;
+  text-align: center;
   border-bottom:1px solid #444;
 }
 
-/* Freeze 3 cột đầu */
-#page-stats th:nth-child(1),
-#page-stats td:nth-child(1){ position: sticky; left: 0; z-index:22; background:#fff; }
-#page-stats th:nth-child(2),
-#page-stats td:nth-child(2){ position: sticky; left:130px; z-index:22; background:#fff; }
-#page-stats th:nth-child(3),
-#page-stats td:nth-child(3){ position: sticky; left:290px; z-index:22; background:#fff; }
+/* Freeze 3 first columns */
+#page-stats th.sticky-col-header,
+#page-stats td.sticky-col {
+  position: sticky;
+  left: 0;
+  background: #fff;
+  z-index: 101;
+}
 
-/* Scroll xuống row vẫn nhìn thấy sticky header */
-#page-stats .tableWrap { overflow:auto; max-width:100%; max-height:70vh; } 
+#page-stats th:nth-child(2),
+#page-stats td:nth-child(2){ left:130px; z-index:101; }
+#page-stats th:nth-child(3),
+#page-stats td:nth-child(3){ left:290px; z-index:101; }
+
+/* Align text center for date columns */
+#page-stats td, #page-stats th { padding:6px 8px; white-space: nowrap; }
+#page-stats td:not(.sticky-col) { text-align: center; }
+
+/* pan-cell highlight */
+.pan-cell {
+  cursor: pointer;
+  color:#2563eb;
+  font-weight:700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
   </style>
 </head>
 
@@ -1776,39 +1794,33 @@ function populateStatsFilters(){
 }
 
 function renderStatsPage(){
-
   const posFilter = document.getElementById("statsPos")?.value || "";
   const fromDate = document.getElementById("statsFrom")?.value || "";
   const toDate   = document.getElementById("statsTo")?.value || "";
 
   const allowedIds = new Set(
-    (FILTERED || [])
-      .map(r => (r["ID"] || "").trim())
-      .filter(Boolean)
+    (FILTERED || []).map(r => (r["ID"] || "").trim()).filter(Boolean)
   );
 
   const datesAll = window.ORDER_DATES || [];
-  const dates = datesAll.slice(-30); // 30 ngày gần nhất
-
+  const dates = datesAll.slice(-30);
   const activeDates = dates.filter(d=>{
     if(fromDate && d < fromDate) return false;
     if(toDate && d > toDate) return false;
     return true;
   });
 
-  let rows = Object.entries(ORDER_STATS || {})
-    .filter(([id, v]) => {
-      if(!allowedIds.has(id)) return false;
-      const emp = FILTERED.find(r => (r["ID"] || "").trim() === id)
-               || RAW.find(r => (r["ID"] || "").trim() === id);
-      if(!emp) return false;
-      if(posFilter && (emp["岗位"] || "") !== posFilter) return false;
-      if(activeDates.length){
-        const ok = activeDates.some(d => v?.[d]);
-        if(!ok) return false;
-      }
-      return true;
-    });
+  let rows = Object.entries(ORDER_STATS || {}).filter(([id,v])=>{
+    if(!allowedIds.has(id)) return false;
+    const emp = FILTERED.find(r => r["ID"]===id) || RAW.find(r => r["ID"]===id);
+    if(!emp) return false;
+    if(posFilter && (emp["岗位"] || "") !== posFilter) return false;
+    if(activeDates.length){
+      const ok = activeDates.some(d => v?.[d]);
+      if(!ok) return false;
+    }
+    return true;
+  });
 
   if(sortField){
     rows.sort((a,b)=>{
@@ -1829,94 +1841,90 @@ function renderStatsPage(){
     });
   }
 
-  els.pageStats.innerHTML = `
-    <div class="card">
-      <h2>员工订单处理统计</h2>
-      <div class="sub">按员工 ID 汇总</div>
+  const html = `
+  <div class="card">
+    <h2>员工订单处理统计</h2>
+    <div class="sub">按员工 ID 汇总</div>
 
-      <div class="statsFilters">
-        <input type="date" id="statsFrom" value="${esc(fromDate)}" />
-        <input type="date" id="statsTo" value="${esc(toDate)}" />
-        <select id="statsPos">
-          <option value="">全部岗位</option>
-        </select>
-      </div>
-
-      <div class="tableWrap">
-        <table>
-          <thead>
-            <tr>
-              <th class="sticky-col-header" rowspan="2">ID</th>
-              <th class="sticky-col-header" rowspan="2">姓名</th>
-              <th class="sticky-col-header" rowspan="2">团队</th>
-              <th rowspan="2">班次</th>
-              <th rowspan="2">国家</th>
-              <th rowspan="2">岗位</th>
-              <th rowspan="2">盘口</th>
-              <th rowspan="2">入职时间</th>
-              <th rowspan="2" onclick="sortStats('total')" style="cursor:pointer">总 ⬍</th>
-              <th rowspan="2" onclick="sortStats('avg')" style="cursor:pointer">平均每天处理 ⬍</th>
-              ${activeDates.map(d=>`<th colspan="2">${esc(d)}</th>`).join("")}
-            </tr>
-            <tr>
-              ${activeDates.map(()=>`<th>成功</th><th>驳回</th>`).join("")}
-            </tr>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows.map(([id,v])=>{
-              const emp = FILTERED.find(r => (r["ID"] || "").trim() === id)
-                       || RAW.find(r => (r["ID"] || "").trim() === id);
-
-              const name = emp?.["姓名"] || "-";
-              const team = emp?.["团队"] || "-";
-              const shift = emp?.["班次"] || "-";
-              const country = emp?.["国家"] || "-";
-              const pos = emp?.["岗位"] || "-";
-              const pan = emp?.["盘口"] || "-";
-              const join = ACCOUNT_JOIN_DATE[id] || "-";
-
-              let total = 0;
-              activeDates.forEach(d=>{
-                const day = v?.[d] || {success:0,reject:0};
-                total += Number(day.success || 0);
-              });
-
-              const avg = activeDates.length ? Math.round(total / activeDates.length) : 0;
-
-              return `
-                <tr>
-                  <td class="sticky-col">${esc(id)}</td>
-                  <td class="sticky-col">${esc(name)}</td>
-                  <td class="sticky-col">${esc(team)}</td>
-                  <td>${esc(shift)}</td>
-                  <td>${esc(country)}</td>
-                  <td>${esc(pos)}</td>
-                  <td class="pan-cell" onclick="showPan('${esc(pan)}')">${esc(pan)}</td>
-                  <td>${esc(join)}</td>
-                  <td>${total}</td>
-                  <td>${avg}</td>
-                  ${activeDates.map(d=>{
-                    const day = v?.[d] || {success:0,reject:0};
-                    return `<td>${day.success || 0}</td><td>${day.reject || 0}</td>`;
-                  }).join("")}
-                </tr>
-              `;
-            }).join("")}
-          </tbody>
-        </table>
-      </div>
+    <div class="statsFilters">
+      <input type="date" id="statsFrom" value="${esc(fromDate)}" />
+      <input type="date" id="statsTo" value="${esc(toDate)}" />
+      <select id="statsPos">
+        <option value="">全部岗位</option>
+      </select>
     </div>
+
+    <div class="tableWrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="sticky-col-header" rowspan="2">ID</th>
+            <th class="sticky-col-header" rowspan="2">姓名</th>
+            <th class="sticky-col-header" rowspan="2">团队</th>
+            <th rowspan="2">班次</th>
+            <th rowspan="2">国家</th>
+            <th rowspan="2">岗位</th>
+            <th rowspan="2">盘口</th>
+            <th rowspan="2">入职时间</th>
+            <th rowspan="2" onclick="sortStats('total')" style="cursor:pointer">总 ⬍</th>
+            <th rowspan="2" onclick="sortStats('avg')" style="cursor:pointer">平均每天处理 ⬍</th>
+            ${activeDates.map(d=>`<th colspan="2">${esc(d)}</th>`).join("")}
+          </tr>
+          <tr>
+            ${activeDates.map(()=>`<th>成功</th><th>驳回</th>`).join("")}
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(([id,v])=>{
+            const emp = FILTERED.find(r => r["ID"]===id) || RAW.find(r => r["ID"]===id);
+            const name = emp?.["姓名"] || "-";
+            const team = emp?.["团队"] || "-";
+            const shift = emp?.["班次"] || "-";
+            const country = emp?.["国家"] || "-";
+            const pos = emp?.["岗位"] || "-";
+            const pan = emp?.["盘口"] || "-";
+            const join = ACCOUNT_JOIN_DATE[id] || "-";
+
+            let total = 0;
+            activeDates.forEach(d=>{
+              const day = v?.[d] || {success:0,reject:0};
+              total += Number(day.success || 0);
+            });
+
+            const avg = activeDates.length ? Math.round(total / activeDates.length) : 0;
+
+            return `
+              <tr>
+                <td class="sticky-col">${esc(id)}</td>
+                <td class="sticky-col">${esc(name)}</td>
+                <td class="sticky-col">${esc(team)}</td>
+                <td>${esc(shift)}</td>
+                <td>${esc(country)}</td>
+                <td>${esc(pos)}</td>
+                <td class="pan-cell" onclick="showPan('${esc(pan)}')">${esc(pan)}</td>
+                <td>${esc(join)}</td>
+                <td>${total}</td>
+                <td>${avg}</td>
+                ${activeDates.map(d=>{
+                  const day = v?.[d] || {success:0,reject:0};
+                  return `<td>${day.success || 0}</td><td>${day.reject || 0}</td>`;
+                }).join("")}
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>
+  </div>
   `;
+
+  els.pageStats.innerHTML = html;
 
   populateStatsFilters();
 
-  const posSel = document.getElementById("statsPos");
-  if(posSel) posSel.onchange = renderStatsPage;
-  const fromEl = document.getElementById("statsFrom");
-  if(fromEl) fromEl.onchange = renderStatsPage;
-  const toEl = document.getElementById("statsTo");
-  if(toEl) toEl.onchange = renderStatsPage;
+  document.getElementById("statsPos").onchange = renderStatsPage;
+  document.getElementById("statsFrom").onchange = renderStatsPage;
+  document.getElementById("statsTo").onchange = renderStatsPage;
 }
   
 load();
