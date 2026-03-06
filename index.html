@@ -516,6 +516,7 @@
     <div class="tab" data-page="schedule">排班表</div>
     <div class="tab" data-page="pan">盘口人数</div>
     <div class="tab" data-page="stats">统计</div>
+    <div class="tab" data-page="mistakes">错误统计</div>
   </div>
 
   <div class="filterBar" id="filterBar">
@@ -539,6 +540,7 @@
   <div class="page" id="page-schedule"></div>
   <div class="page" id="page-pan"></div>
   <div class="page" id="page-stats"></div>
+  <div class="page" id="page-mistakes"></div>
 </div>
 
 <!-- MODAL -->
@@ -568,6 +570,9 @@ const ORDER_API =
 
 const ACCOUNT_API =
 "https://opensheet.elk.sh/1e38ZBHG0B0nxODaooPhgreG67A2RLxLxrpP8Sas_vZA/账号";
+
+const MISTAKE_API = "https://opensheet.vercel.app/1TEp-YzwjFKjorR4Xpmrb6UiKq2maMmawIW6oYQI75qM/员工错误";
+let MISTAKES = [];
 
 /*
   Column mapping (by header names from your sheet):
@@ -1615,7 +1620,38 @@ async function loadOrderStats(){
   ORDER_STATS = map;
   window.ORDER_DATES = [...dates].sort();
 }
+async function loadMistakes(){
+  try{
+    const res = await fetch(MISTAKE_API, { cache:"no-store" });
+    if(!res.ok) throw new Error("Fetch failed: " + res.status);
+    const data = await res.json();
+    if(!Array.isArray(data)) throw new Error("Mistake sheet JSON is not array");
 
+    MISTAKES = data.map(r=>({
+      "ID": normPick(r, ["ID","Id"]),
+      "会员/id /订单号": normPick(r, ["会员/id /订单号","会员ID/订单号"]),
+      "工单号": normPick(r, ["工单号","Work Order"]),
+      "Mistake Remark 错误备注": normPick(r, ["Mistake Remark","错误备注"]),
+      "The Right Way 正确操作方式": normPick(r, ["The Right Way","正确操作方式"]),
+      "Mistake Type 错误类型": normPick(r, ["Mistake Type","错误类型"]),
+      "Deduct 扣分": normPick(r, ["Deduct","扣分"]),
+      "Check Name 质检人": normPick(r, ["Check Name","质检人"]),
+      "Check Time 质检时间": normDateISO(normPick(r, ["Check Time","质检时间"])),
+      "TL Recheck 小组长复审": normPick(r, ["TL Recheck","小组长复审"]),
+      "first check right or wrong 质检人对/错": normPick(r, ["first check right or wrong","质检人对/错"]),
+      "Check Time 复检时间": normDateISO(normPick(r, ["Check Time 复检时间","复检时间"]))
+    }));
+    
+  }catch(err){
+    console.error("Load Mistakes:", err);
+    els.pageMistakes.innerHTML = `
+      <div class="card">
+        <h2>加载错误统计失败</h2>
+        <div class="note">${esc(err?.message||err)}</div>
+      </div>
+    `;
+  }
+}
   // ===============================
 // RENDER ORDER STATS
 // ===============================
@@ -1899,6 +1935,126 @@ document.addEventListener("click", e => {
 
   rows.forEach(r => tbody.appendChild(r));
 });
+
+  function renderMistakesPage(){
+  const rows = MISTAKES;
+
+  els.pageMistakes.innerHTML = `
+    <div class="card">
+      <h2>员工错误统计</h2>
+      <div class="sub">可搜索/筛选 / 点击 ID 弹窗显示详细信息</div>
+      <input type="text" id="mistakeSearch" placeholder="Search ID / 姓名 / 工单号 / 岗位 / 盘口" style="margin-bottom:10px; padding:6px 10px; border-radius:6px; border:1px solid #ccc; width:250px" />
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>会员/id /订单号</th>
+              <th>工单号</th>
+              <th>Mistake Remark 错误备注</th>
+              <th>The Right Way 正确操作方式</th>
+              <th>Mistake Type 错误类型</th>
+              <th class="sortable" data-value="Deduct 扣分">Deduct 扣分 <span class="sort-arrow">⇅</span></th>
+              <th>Check Name 质检人</th>
+              <th>Check Time 质检时间</th>
+              <th>TL Recheck 小组长复审</th>
+              <th>first check right or wrong 质检人对/错</th>
+              <th>Check Time 复检时间</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r=>`
+              <tr>
+                <td class="link" onclick="openModal('员工错误详情', renderFullTable([r]))">${esc(r["ID"])}</td>
+                <td>${esc(r["会员/id /订单号"])}</td>
+                <td>${esc(r["工单号"])}</td>
+                <td>${esc(r["Mistake Remark 错误备注"])}</td>
+                <td>${esc(r["The Right Way 正确操作方式"])}</td>
+                <td>${esc(r["Mistake Type 错误类型"])}</td>
+                <td class="sortable" data-value="${r["Deduct 扣分"] || 0}">${esc(r["Deduct 扣分"])}</td>
+                <td>${esc(r["Check Name 质检人"])}</td>
+                <td>${esc(r["Check Time 质检时间"])}</td>
+                <td>${esc(r["TL Recheck 小组长复审"])}</td>
+                <td>${esc(r["first check right or wrong 质检人对/错"])}</td>
+                <td>${esc(r["Check Time 复检时间"])}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  // search filter
+  const searchInput = document.getElementById("mistakeSearch");
+  searchInput.oninput = ()=>{
+    const q = norm(searchInput.value).toLowerCase();
+    Array.from(els.pageMistakes.querySelectorAll("tbody tr")).forEach(tr=>{
+      const text = tr.textContent.toLowerCase();
+      tr.style.display = text.includes(q) ? "" : "none";
+    });
+  };
+}
+
+  function renderMistakesPage(){
+  const rows = MISTAKES;
+
+  els.pageMistakes.innerHTML = `
+    <div class="card">
+      <h2>员工错误统计</h2>
+      <div class="sub">可搜索/筛选 / 点击 ID 弹窗显示详细信息</div>
+      <input type="text" id="mistakeSearch" placeholder="Search ID / 姓名 / 工单号 / 岗位 / 盘口" style="margin-bottom:10px; padding:6px 10px; border-radius:6px; border:1px solid #ccc; width:250px" />
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>会员/id /订单号</th>
+              <th>工单号</th>
+              <th>Mistake Remark 错误备注</th>
+              <th>The Right Way 正确操作方式</th>
+              <th>Mistake Type 错误类型</th>
+              <th class="sortable" data-value="Deduct 扣分">Deduct 扣分 <span class="sort-arrow">⇅</span></th>
+              <th>Check Name 质检人</th>
+              <th>Check Time 质检时间</th>
+              <th>TL Recheck 小组长复审</th>
+              <th>first check right or wrong 质检人对/错</th>
+              <th>Check Time 复检时间</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r=>`
+              <tr>
+                <td class="link" onclick="openModal('员工错误详情', renderFullTable([r]))">${esc(r["ID"])}</td>
+                <td>${esc(r["会员/id /订单号"])}</td>
+                <td>${esc(r["工单号"])}</td>
+                <td>${esc(r["Mistake Remark 错误备注"])}</td>
+                <td>${esc(r["The Right Way 正确操作方式"])}</td>
+                <td>${esc(r["Mistake Type 错误类型"])}</td>
+                <td class="sortable" data-value="${r["Deduct 扣分"] || 0}">${esc(r["Deduct 扣分"])}</td>
+                <td>${esc(r["Check Name 质检人"])}</td>
+                <td>${esc(r["Check Time 质检时间"])}</td>
+                <td>${esc(r["TL Recheck 小组长复审"])}</td>
+                <td>${esc(r["first check right or wrong 质检人对/错"])}</td>
+                <td>${esc(r["Check Time 复检时间"])}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  // search filter
+  const searchInput = document.getElementById("mistakeSearch");
+  searchInput.oninput = ()=>{
+    const q = norm(searchInput.value).toLowerCase();
+    Array.from(els.pageMistakes.querySelectorAll("tbody tr")).forEach(tr=>{
+      const text = tr.textContent.toLowerCase();
+      tr.style.display = text.includes(q) ? "" : "none";
+    });
+  };
+}
 load();
 </script>
 </body>
