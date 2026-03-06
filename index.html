@@ -2096,8 +2096,18 @@ function renderStatsPage(){
                   </td>
 
                   ${activeDates.map(d=>{
+
+                    const joinDate = (ACCOUNT_JOIN_DATE[id] || "").slice(0,10);
+
+                    // nếu ngày xử lý trước ngày入职 thì hiển thị 0
+                    if(joinDate && d < joinDate){
+                      return `<td>0 / 0</td>`;
+                    }
+
                     const day = v?.[d] || {success:0,reject:0};
+
                     return `<td>${day.success || 0} / ${day.reject || 0}</td>`;
+
                   }).join("")}
                 </tr>
               `;
