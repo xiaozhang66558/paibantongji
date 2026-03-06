@@ -457,48 +457,71 @@
       color:#2563eb;
       font-weight:700;
     }
-/* sticky offsets */
+/* =========================
+   STATS TABLE STICKY FIX
+========================= */
 
-th:nth-child(1), td:nth-child(1){
-  left:0;
+#page-stats .tableWrap{
+  overflow:auto;
 }
 
-th:nth-child(2), td:nth-child(2){
-  left:120px;
+#page-stats table{
+  width:max-content;
+  min-width:100%;
 }
 
-th:nth-child(3), td:nth-child(3){
-  left:280px;
-}
-    /* fixed width for frozen columns */
-
-th:nth-child(1), td:nth-child(1){
-  width:120px;
-  min-width:120px;
-}
-
-th:nth-child(2), td:nth-child(2){
-  width:160px;
-  min-width:160px;
-}
-
-th:nth-child(3), td:nth-child(3){
-  width:140px;
-  min-width:140px;
+#page-stats th,
+#page-stats td{
+  white-space:nowrap;
 }
 
 /* freeze first 3 columns */
 
-th:nth-child(1), td:nth-child(1){
+#page-stats th:nth-child(1),
+#page-stats td:nth-child(1){
+  position:sticky;
   left:0;
+  background:#fff;
+  z-index:3;
+  min-width:130px;
 }
 
-th:nth-child(2), td:nth-child(2){
-  left:120px;
+#page-stats th:nth-child(2),
+#page-stats td:nth-child(2){
+  position:sticky;
+  left:130px;
+  background:#fff;
+  z-index:3;
+  min-width:160px;
 }
 
-th:nth-child(3), td:nth-child(3){
-  left:260px;
+#page-stats th:nth-child(3),
+#page-stats td:nth-child(3){
+  position:sticky;
+  left:290px;
+  background:#fff;
+  z-index:3;
+  min-width:140px;
+}
+
+/* header layer */
+
+#page-stats thead th:nth-child(1),
+#page-stats thead th:nth-child(2),
+#page-stats thead th:nth-child(3){
+  z-index:5;
+  background:linear-gradient(180deg,#0b1220,#111827);
+}
+
+/* date columns width */
+
+#page-stats thead th[colspan="2"]{
+  min-width:90px;
+}
+
+#page-stats tbody td:nth-child(n+11){
+  min-width:45px;
+  width:45px;
 }
   </style>
 </head>
@@ -1862,7 +1885,6 @@ function renderStatsPage(){
               <th rowspan="2">入职时间</th>
               <th rowspan="2" onclick="sortStats('total')" style="cursor:pointer">总 ⬍</th>
               <th rowspan="2" onclick="sortStats('avg')" style="cursor:pointer">平均每天处理 ⬍</th>
-              </th>
               ${activeDates.map(d=>`<th colspan="2">${esc(d)}</th>`).join("")}
             </tr>
             <tr>
