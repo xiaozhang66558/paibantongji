@@ -552,14 +552,15 @@
   min-width:80px;
   max-width:80px;
 }
-#page-stats thead tr:nth-child(2) th{
-  width:40px;
-  min-width:40px;
+/* row 2 của header (成功 / 驳回) */
+#page-stats thead tr:nth-child(2) th {
+  width: 40px;
+  min-width: 40px;
   position: sticky;
-  top: 40px; /* khoảng cách từ top header row 1 tới row 2 */
-  background: linear-gradient(180deg,#0b1220,#111827);
+  top: 36px; /* bằng chiều cao row header 1, chỉnh nếu row 1 cao hơn */
+  background: linear-gradient(180deg, #0b1220, #111827);
   color: #fff;
-  z-index: 5;
+  z-index: 7; /* cao hơn cell nội dung */
   text-align: center;
 }
 
