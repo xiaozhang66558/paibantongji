@@ -480,6 +480,7 @@
       z-index: 20;
       background: linear-gradient(180deg, #0b1220, #111827);
     }
+    }
     /* SORT ICON CHO CÁC CỘT */
     .sortable {
       cursor: pointer;
@@ -798,7 +799,7 @@ function applyFilters(){
   renderEmployees();
   renderSchedule();
   renderPanPage();
-
+  renderStatsPage();
 }
 
 ["input","change"].forEach(evt=>{
@@ -901,20 +902,10 @@ function openManagerList(fieldLabel, rows){
   `;
   openModal(`${fieldLabel} 名单（${names.length}）`, html);
 }
-  
-// ===== Đặt NGAY TRƯỚC hoặc SAU modalStack / openModal / pushModal =====
-window.renderErrorCountModal = function(id){
-  const rows = ERROR_MAP.get(id) || [];
-  const count = rows.length;
 
-  const html = `
-    <div class="note" style="font-size:16px; padding:20px;">
-      ID: <b>${esc(id)}</b> <br>
-      错误次数: <b>${count}</b> 次
-    </div>
-  `;
-
-  openModal(`错误统计 - ${id}`, html);
+window.openManagerSubs = function(fieldLabel, managerName){
+  const subs = FILTERED.filter(r=>norm(r[fieldLabel])===managerName);
+  pushModal(`${fieldLabel}：${managerName}（下属 ${countByUniqueName(subs)}）`, renderFullTable(subs, `${fieldLabel} = ${managerName}`));
 };
 
 /* =========================================================
@@ -1441,16 +1432,8 @@ async function load(){
       ERROR_ROWS.forEach(r => {
         const id = (r["ID"]||"").trim();
         if(!ERROR_MAP.has(id)) ERROR_MAP.set(id, []);
-
-        // chỉ giữ cột A→D
-        ERROR_MAP.get(id).push({
-          "ID": r["ID"] || "",
-          "会员/id /订单号": r["会员/id /订单号"] || "",
-          "工单号": r["工单号"] || "",
-          "Mistake Remark / 错误备注": r["Mistake Remark / 错误备注"] || ""
-        });
+        ERROR_MAP.get(id).push(r);
       });
-    } 
 
     } catch(err) {
       console.error("Load ERROR sheet failed", err);
@@ -1497,12 +1480,6 @@ async function load(){
     buildSelectOptions(els.countrySel, countries, "All 国家（国家）");
     buildSelectOptions(els.posSel, poss, "All positions（岗位）");
 
-    } catch(err) {
-      console.error("Load ERROR sheet failed", err);
-      ERROR_ROWS = [];
-      ERROR_MAP.clear();
-    }
-  
     applyFilters();
     populateStatsFilters();
     renderStatsPage();
@@ -1922,7 +1899,7 @@ function renderStatsPage(){
                   <td class="sortable" data-value="${avg}">${avg}</td>
 
                   <td class="link" style="color:#2563eb; font-weight:700; cursor:pointer;"
-                      onclick="renderErrorCountModal('${esc(id)}')">
+                      onclick="openErrorModal('${esc(id)}')">
                     ${ERROR_MAP.get(id)?.length || 0}
                   </td>
 
