@@ -456,6 +456,26 @@
       color:#2563eb;
       font-weight:700;
     }
+    /* =========================
+       STICKY HEADER BẢNG (2 hàng)
+       ========================= */
+    table thead th {
+      position: sticky;
+      top: 0;           /* hàng đầu tiên dính trên cùng */
+      z-index: 10;      /* luôn ở trên các ô khác */
+      background: linear-gradient(180deg, #0b1220, #111827);
+      color: #fff;
+    }
+
+    table thead tr:first-child th {
+      top: 0;
+      z-index: 12;      /* hàng trên cùng luôn cao nhất */
+    }
+
+    table thead tr:nth-child(2) th {
+      top: 30px;        /* chiều cao hàng đầu tiên */
+      z-index: 11;      /* nằm trên tbody nhưng dưới hàng 1 */
+    }
   </style>
 </head>
 
