@@ -502,30 +502,34 @@
 #page-stats .tableWrap { overflow:auto; max-width:100%; }
 #page-stats table { border-collapse:collapse; min-width:max-content; }
 
-/* Sticky 2 row header */
-#page-stats thead tr:first-child th,
-#page-stats thead tr:nth-child(2) th {
+/* Sticky 2 dòng header */
+#page-stats thead tr:first-child th {
   position: sticky;
-  top: 0;
-  background: #111827;
-  color: #fff;
-  z-index: 20;
-  text-align: center; /* căn giữa */
+  top:0;
+  z-index:20;
+  background:#111827;
+  color:#fff;
+  text-align:center;
+  border-bottom:1px solid #444;
 }
 
-/* Cách đặt top cho row thứ 2 */
 #page-stats thead tr:nth-child(2) th {
-  top: 36px; /* hoặc height của row 1 */
-  z-index: 21;
+  position: sticky;
+  top:36px; /* height của row1 header */
+  z-index:21;
+  background:#111827;
+  color:#fff;
+  text-align:center;
+  border-bottom:1px solid #444;
 }
 
 /* Freeze 3 cột đầu */
 #page-stats th:nth-child(1),
-#page-stats td:nth-child(1){ position: sticky; left: 0; z-index: 22; background:#fff; }
+#page-stats td:nth-child(1){ position: sticky; left: 0; z-index:22; background:#fff; }
 #page-stats th:nth-child(2),
-#page-stats td:nth-child(2){ position: sticky; left:130px; z-index: 22; background:#fff; }
+#page-stats td:nth-child(2){ position: sticky; left:130px; z-index:22; background:#fff; }
 #page-stats th:nth-child(3),
-#page-stats td:nth-child(3){ position: sticky; left:290px; z-index: 22; background:#fff; }
+#page-stats td:nth-child(3){ position: sticky; left:290px; z-index:22; background:#fff; }
 
 /* Scroll xuống row vẫn nhìn thấy sticky header */
 #page-stats .tableWrap { overflow:auto; max-width:100%; max-height:70vh; } 
@@ -1852,10 +1856,11 @@ function renderStatsPage(){
               <th rowspan="2">入职时间</th>
               <th rowspan="2" onclick="sortStats('total')" style="cursor:pointer">总 ⬍</th>
               <th rowspan="2" onclick="sortStats('avg')" style="cursor:pointer">平均每天处理 ⬍</th>
-              ${activeDates.map(d=>`<th>${esc(d)}</th>`).join("")}
+              ${activeDates.map(d=>`<th colspan="2">${esc(d)}</th>`).join("")}
             </tr>
             <tr>
-              ${activeDates.map(()=>`<th>成功/驳回</th>`).join("")}
+              ${activeDates.map(()=>`<th>成功</th><th>驳回</th>`).join("")}
+            </tr>
             </tr>
           </thead>
           <tbody>
@@ -1893,7 +1898,7 @@ function renderStatsPage(){
                   <td>${avg}</td>
                   ${activeDates.map(d=>{
                     const day = v?.[d] || {success:0,reject:0};
-                    return `<td>${day.success || 0} / ${day.reject || 0}</td>`;
+                    return `<td>${day.success || 0}</td><td>${day.reject || 0}</td>`;
                   }).join("")}
                 </tr>
               `;
