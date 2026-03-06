@@ -448,7 +448,7 @@
 
    /* ===== TABLE AUTO FIT ===== */
    .statsTable{
-     table-layout:auto;
+     table-layout:fixed;
      width:100%;
    }
 
@@ -460,12 +460,16 @@
    }
     .statsTable th:nth-child(9),
     .statsTable td:nth-child(9){
-      min-width:90px;
+      width:100px !important;
+      min-width:100px !important;
+      text-align:center;
     }
 
     .statsTable th:nth-child(10),
     .statsTable td:nth-child(10){
-      min-width:120px;
+      width:140px !important;
+      min-width:140px !important;
+      text-align:center;
     }
 
 /* ===== 盘口 column toàn hệ thống ===== */
