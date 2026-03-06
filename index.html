@@ -460,14 +460,13 @@
 
 .sticky-col{
   position:sticky;
-  left:0;
   background:#fff;
   z-index:3;
 }
 
 .sticky-col-header{
   position:sticky;
-  left:0;
+  background:#0b1220;
   z-index:4;
 }
     /* column offsets */
@@ -1619,7 +1618,7 @@ function renderOrderStats(){
 });
 
   const html = `
-  <div class="card">
+  <div class="card" id="orderStatsBox">
 
     <h2>员工订单处理统计</h2>
 
@@ -1675,7 +1674,7 @@ function renderOrderStats(){
           <td>${shift}</td>
           <td>${country}</td>
           <td>${pos}</td>
-          <td class="pan-cell" onclick="showPan('${pan}')">${pan}</td>
+          <td class="pan-cell" onclick="showPan(\`${pan}\`)">${pan}</td>
 
           ${dates.map(d=>{
             const day = v[d] || {success:0,reject:0};
@@ -1697,6 +1696,8 @@ function renderOrderStats(){
 
   </div>
   `;
+
+  document.getElementById("orderStatsBox")?.remove();
 
   document
     .getElementById("page-dashboard")
@@ -1779,7 +1780,7 @@ function renderStatsPage(){
 
       // nếu chọn khoảng ngày thì ID này phải có ít nhất 1 ngày nằm trong khoảng
       if(activeDates.length){
-        const ok = activeDates.some(d => (v && v[d]));
+        const ok = activeDates.some(d => v?.[d]);
         if(!ok) return false;
       }
       return true;
