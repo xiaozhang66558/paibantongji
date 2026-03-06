@@ -446,38 +446,34 @@
       text-align: right !important;
     }
 
-/* 1️⃣ Áp dụng cho tất cả bảng */
-table {
-  table-layout: auto !important;
-  width: 100%;
-  border-collapse: collapse;
-}
+   /* ===== TABLE AUTO FIT ===== */
+   .statsTable{
+     table-layout:auto;
+     width:100%;
+   }
 
- /* 盘口 column nhỏ */
- .pan-cell,
- .statsTable th:nth-child(7),
- .statsTable td:nth-child(7) {
-   width:120px;
-   max-width:120px;
-   overflow:hidden;
-   text-overflow:ellipsis;
-   white-space:nowrap;
-   cursor:pointer;
-   color:#2563eb;
-   font-weight:700;
- }
+   /* các cột bình thường */
    .statsTable th,
    .statsTable td{
      padding:8px 10px;
      white-space:nowrap;
    }
 
-   .statsTable{
-     width:max-content;
-     min-width:100%;
-   }
+/* ===== 盘口 column cố định nhỏ ===== */
+   .pan-cell,
+   .statsTable th:nth-child(7),
+   .statsTable td:nth-child(7){
 
-}
+     width:140px !important;
+     min-width:140px !important;
+     max-width:140px !important;
+
+     white-space:normal !important;
+     word-break:break-word;
+
+     text-align:center;
+   }
+   }
     /* =========================
        STICKY HEADER - 2 ROWS ĐỒNG NHẤT NỀN
     ========================= */
