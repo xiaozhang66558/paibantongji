@@ -415,54 +415,51 @@
     }
 
     /* Table Stats / Orders view: left-align + sticky first 3 cột */
-    #page-stats table, #page-stats th, #page-stats td {
-      white-space: nowrap;
-      text-align: left; /* để dễ đọc */
-      padding: 6px 8px;
-      min-width: 45px;
-    }
+    /* Table layout cố định để tránh chữ đè */
+#page-stats table {
+  table-layout: fixed;
+  width: max-content; /* giữ đủ ngang */
+  min-width: 1200px;
+}
 
-    #page-stats th.sticky-col-header,
-    #page-stats td.sticky-col {
-      position: sticky;
-      left: 0;
-      background: #fff;
-      z-index: 12;
-    }
+/* Cột sticky: ID, 姓名, 团队 */
+#page-stats th.sticky-col-header,
+#page-stats td.sticky-col {
+  position: sticky;
+  background: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  z-index: 12;
+}
 
-    #page-stats th:nth-child(1),
-    #page-stats td:nth-child(1){ left:0; z-index:12; background:#fff; min-width:130px; }
-    #page-stats th:nth-child(2),
-    #page-stats td:nth-child(2){ left:130px; z-index:12; background:#fff; min-width:160px; }
-    #page-stats th:nth-child(3),
-    #page-stats td:nth-child(3){ left:290px; z-index:12; background:#fff; min-width:140px; }
+/* Sticky từng cột với width hợp lý */
+#page-stats th:nth-child(1), #page-stats td:nth-child(1){ left:0; min-width:120px; z-index:22; }
+#page-stats th:nth-child(2), #page-stats td:nth-child(2){ left:120px; min-width:150px; z-index:22; }
+#page-stats th:nth-child(3), #page-stats td:nth-child(3){ left:270px; min-width:150px; z-index:22; }
 
-    /* Header 2 dòng sticky */
-    #page-stats thead tr:first-child th{
-      position: sticky; top:0;
-      background: linear-gradient(180deg,#0b1220,#111827);
-      color:#fff;
-      z-index:14;
-      text-align: left;
-    }
-    #page-stats thead tr:nth-child(2) th{
-      position: sticky; top:36px;
-      background: linear-gradient(180deg,#0b1220,#111827);
-      color:#fff;
-      z-index:15;
-      text-align: left;
-    }
-    #page-stats thead tr:nth-child(2) th:nth-child(1){ left:0; z-index:16; }
-    #page-stats thead tr:nth-child(2) th:nth-child(2){ left:130px; z-index:16; }
-    #page-stats thead tr:nth-child(2) th:nth-child(3){ left:290px; z-index:16; }
+/* Header 2 dòng sticky */
+#page-stats thead tr:first-child th { top:0; z-index:20; }
+#page-stats thead tr:nth-child(2) th { top:36px; z-index:21; }
 
-    /* Center flex containers (khi cần) */
-    .kpiRow,
-    .grid2,
-    .btnRow,
-    .empCard .row1 {
-      justify-content: center;
-    }
+/* Nội dung dài trong cột */
+#page-stats td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding:6px 8px;
+}
+
+/* Pan-cell vẫn clickable nhưng không tràn */
+#page-stats .pan-cell{
+  max-width:120px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  cursor:pointer;
+  color:#2563eb;
+  font-weight:700;
+}
 
     /* ===== GIỮ HEADER & FILTER NHƯ CŨ ===== */
     header{
