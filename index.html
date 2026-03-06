@@ -467,7 +467,7 @@
 
 #page-stats table{
   width:max-content;
-  min-width:100%;
+  min-width:1200px;
 }
 
 #page-stats th,
@@ -477,31 +477,63 @@
 
 /* freeze first 3 columns */
 
+/* freeze column 1 */
+
 #page-stats th:nth-child(1),
 #page-stats td:nth-child(1){
   position:sticky;
   left:0;
-  background:#fff;
-  z-index:3;
   min-width:130px;
 }
+
+#page-stats th:nth-child(1){
+  background:#0b1220;
+  z-index:6;
+}
+
+#page-stats td:nth-child(1){
+  background:#fff;
+  z-index:4;
+}
+
+
+/* column 2 */
 
 #page-stats th:nth-child(2),
 #page-stats td:nth-child(2){
   position:sticky;
   left:130px;
-  background:#fff;
-  z-index:3;
   min-width:160px;
 }
+
+#page-stats th:nth-child(2){
+  background:#0b1220;
+  z-index:6;
+}
+
+#page-stats td:nth-child(2){
+  background:#fff;
+  z-index:4;
+}
+
+
+/* column 3 */
 
 #page-stats th:nth-child(3),
 #page-stats td:nth-child(3){
   position:sticky;
   left:290px;
-  background:#fff;
-  z-index:3;
   min-width:140px;
+}
+
+#page-stats th:nth-child(3){
+  background:#0b1220;
+  z-index:6;
+}
+
+#page-stats td:nth-child(3){
+  background:#fff;
+  z-index:4;
 }
 
 /* header layer */
@@ -516,7 +548,18 @@
 /* date columns width */
 
 #page-stats thead th[colspan="2"]{
-  min-width:90px;
+  width:80px;
+  min-width:80px;
+  max-width:80px;
+}
+    #page-stats thead tr:nth-child(2) th{
+  width:40px;
+  min-width:40px;
+}
+
+#page-stats tbody td:nth-child(n+11){
+  width:40px;
+  min-width:40px;
 }
 
 #page-stats tbody td:nth-child(n+11){
