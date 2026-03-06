@@ -571,6 +571,7 @@ const ACCOUNT_API =
 
 const ERROR_API = "https://opensheet.vercel.app/1TEp-YzwjFKjorR4Xpmrb6UiKq2maMmawIW6oYQI75qM/员工错误";
 let ERROR_ROWS = [];
+let ERROR_MAP = new Map(); // thêm dòng này ngay dưới ERROR_ROWS
 
 /*
   Column mapping (by header names from your sheet):
@@ -1426,16 +1427,18 @@ async function load(){
     try {
       const resErr = await fetch(ERROR_API);
       ERROR_ROWS = await resErr.json();
-      // thêm map để lookup nhanh
-      const ERROR_MAP = new Map();
+
+      ERROR_MAP.clear(); // xóa dữ liệu cũ
       ERROR_ROWS.forEach(r => {
         const id = (r["ID"]||"").trim();
         if(!ERROR_MAP.has(id)) ERROR_MAP.set(id, []);
         ERROR_MAP.get(id).push(r);
       });
+
     } catch(err) {
       console.error("Load ERROR sheet failed", err);
       ERROR_ROWS = [];
+      ERROR_MAP.clear(); // clear luôn nếu load thất bại
     }
 
     const res = await fetch(SHEET_API, { cache:"no-store" });
