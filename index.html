@@ -1518,13 +1518,15 @@ async function load(){
     buildSelectOptions(els.countrySel, countries, "All 国家（国家）");
     buildSelectOptions(els.posSel, poss, "All positions（岗位）");
 
+    await loadMistakes();
+    
     applyFilters();
     populateStatsFilters();
     renderStatsPage();
     renderOrderStats();   // thêm dòng này
 
     // 🔹 Thêm 2 dòng này để load và hiển thị lỗi
-    await loadMistakes();
+    
     renderMistakesPage();
 
   }catch(err){
