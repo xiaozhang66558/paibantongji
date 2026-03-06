@@ -481,17 +481,21 @@
       background: linear-gradient(180deg, #0b1220, #111827);
     }
     }
-    /* ===== SORT ICON CHO CÁC CỘT ===== */
+    /* SORT ICON CHO CÁC CỘT */
     .sortable {
       cursor: pointer;
       user-select: none;
       position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .sortable .sort-arrow {
       font-size: 10px;
       margin-left: 4px;
-      color: #fff;
+      color: #ffffff;
+      display: inline-block;
     }
   </style>
 </head>
@@ -1802,18 +1806,9 @@ function renderStatsPage(){
            <th>岗位</th>
            <th>盘口</th>
            <th>入职时间</th>
-           <th class="sortable">
-           <th>入职时间</th>
-             总 <span class="sort-arrow">⇅</span>
-           <th>入职时间</th>
-           </th>
-           <th>入职时间</th>
-           <th class="sortable">
-           <th>入职时间</th>
-             平均每天处理 <span class="sort-arrow">⇅</span>
-           <th>入职时间</th>
-           </th>
-           ${activeDates.map(d=>`<th>${esc(d)}<br>成功</th><th>${esc(d)}<br>驳回</th>`).join("")}
+           <th class="sortable" data-value="total">总 <span class="sort-arrow">⇅</span></th>
+           <th class="sortable" data-value="avg">平均每天处理 <span class="sort-arrow">⇅</span></th>
+           ${activeDates.map(d => `<th>${esc(d)}<br>成功/驳回</th>`).join("")}
          </tr>
        </thead>
           <tbody>
@@ -1832,12 +1827,18 @@ function renderStatsPage(){
               const join = ACCOUNT_JOIN_DATE[id] || "-";
 
               let total = 0;
-              activeDates.forEach(d=>{
-                const day = v?.[d] || {success:0,reject:0};
-                total += Number(day.success || 0);
+              let validDays = 0;
+
+              activeDates.forEach(d => {
+                const day = v?.[d] || {success:0, reject:0};
+                const dayTotal = (Number(day.success || 0) + Number(day.reject || 0));
+                if(dayTotal > 0){
+                  total += dayTotal;
+                  validDays += 1;
+                }
               });
 
-              const avg = activeDates.length ? Math.round(total / activeDates.length) : 0;
+              const avg = validDays ? Math.round(total / validDays) : 0;
 
               return `
                 <tr>
@@ -1854,7 +1855,7 @@ function renderStatsPage(){
 
                   ${activeDates.map(d=>{
                     const day = v?.[d] || {success:0,reject:0};
-                    return `<td>${day.success || 0}</td><td>${day.reject || 0}</td>`;
+                    return `<td>${day.success || 0} / ${day.reject || 0}</td>`;
                   }).join("")}
                 </tr>
               `;
