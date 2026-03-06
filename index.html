@@ -496,98 +496,34 @@
       font-weight:700;
     }
 /* =========================
-   STATS TABLE STICKY FIX
+   STATS TABLE FIXED COLUMNS + DOUBLE HEADER
 ========================= */
-#page-stats .tableWrap{
-  overflow:auto;
-}
 
-#page-stats table{
-  width:max-content;
-  min-width:1200px;
-  border-collapse: collapse;
-}
-
-#page-stats th,
-#page-stats td{
-  white-space: nowrap;
-  text-align: center;
-  padding: 6px 8px;
-}
-
-/* Freeze first 3 columns với z-index đúng */
-#page-stats th:nth-child(1),
-#page-stats td:nth-child(1){ position: sticky; left:0; z-index:12; background:#fff; min-width:130px; }
-#page-stats th:nth-child(2),
-#page-stats td:nth-child(2){ position: sticky; left:130px; z-index:12; background:#fff; min-width:160px; }
-#page-stats th:nth-child(3),
-#page-stats td:nth-child(3){ position: sticky; left:290px; z-index:12; background:#fff; min-width:140px; }
-
-/* Row headers */
-#page-stats thead tr:first-child th{
-  position: sticky; top:0;
-  background: linear-gradient(180deg,#0b1220,#111827);
-  color:#fff;
-  z-index:14;
-  text-align: left; /* để header không bị center */
-}
-#page-stats thead tr:nth-child(2) th{
-  position: sticky; top:36px;
-  background: linear-gradient(180deg,#0b1220,#111827);
-  color:#fff;
-  z-index:15;
-  text-align: left;
-}
-
-/* Row 2: align left, gắn left cho cột */
-#page-stats thead tr:nth-child(2) th:nth-child(1){ left:0; z-index:16; }
-#page-stats thead tr:nth-child(2) th:nth-child(2){ left:130px; z-index:16; }
-#page-stats thead tr:nth-child(2) th:nth-child(3){ left:290px; z-index:16; }
-
-/* Date columns */
-#page-stats thead th[colspan="2"]{
-  width:80px;
-  min-width:80px;
-  max-width:80px;
-}
-
-/* Body cells for activeDates */
-#page-stats tbody td:nth-child(n+4){
-  min-width:60px;
-  width:60px;
-  padding: 4px 6px;
-  text-align: right; /* số liệu dễ đọc */
-}
-
-/* Optional: hover highlight */
-#page-stats tbody tr:hover{ background: #f7fbff; }
-
-    /* =========================
-   PAGE STATS STICKY HEADER + COLUMNS
-========================= */
 #page-stats .tableWrap {
-  overflow-x: auto;
+  overflow: auto;
   max-width: 100%;
 }
 
 #page-stats table {
-  min-width: max-content; /* giữ header không wrap */
   border-collapse: collapse;
+  min-width: max-content; /* giữ header không wrap */
   font-size: 12px;
 }
 
-#page-stats th, #page-stats td {
+#page-stats th,
+#page-stats td {
   white-space: nowrap;
   padding: 4px 6px;
+  text-align: left; /* cột đầu left align */
 }
 
 /* Freeze first 3 columns */
 #page-stats th:nth-child(1),
-#page-stats td:nth-child(1){ position: sticky; left:0; z-index:12; background:#fff; min-width:130px; text-align:left;}
+#page-stats td:nth-child(1){ position: sticky; left:0; z-index:12; background:#fff; min-width:130px;}
 #page-stats th:nth-child(2),
-#page-stats td:nth-child(2){ position: sticky; left:130px; z-index:12; background:#fff; min-width:160px; text-align:left;}
+#page-stats td:nth-child(2){ position: sticky; left:130px; z-index:12; background:#fff; min-width:160px;}
 #page-stats th:nth-child(3),
-#page-stats td:nth-child(3){ position: sticky; left:290px; z-index:12; background:#fff; min-width:140px; text-align:left;}
+#page-stats td:nth-child(3){ position: sticky; left:290px; z-index:12; background:#fff; min-width:140px;}
 
 /* Double row header */
 #page-stats thead tr:first-child th{
@@ -598,7 +534,7 @@
   text-align: left;
 }
 #page-stats thead tr:nth-child(2) th{
-  position: sticky; top:36px;
+  position: sticky; top:36px; /* chiều cao row 1 */
   background: linear-gradient(180deg,#0b1220,#111827);
   color:#fff;
   z-index:15;
@@ -610,13 +546,34 @@
 #page-stats thead tr:nth-child(2) th:nth-child(2){ left:130px; z-index:16; }
 #page-stats thead tr:nth-child(2) th:nth-child(3){ left:290px; z-index:16; }
 
-/* Các cột số liệu (成功 / 驳回) right-align */
+/* Columns for date cells */
+#page-stats thead th[colspan="2"]{
+  width:80px;
+  min-width:80px;
+  max-width:80px;
+}
+
+/* Body cells for success/reject */
 #page-stats tbody td:nth-child(n+10){
   text-align: right;
   min-width:35px;
   width:35px;
   font-size:10px;
   padding:2px 4px;
+}
+
+/* Hover row */
+#page-stats tbody tr:hover{ background: #f7fbff; }
+
+/* Optional: pan-cell */
+#page-stats td.pan-cell{
+  max-width:120px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  cursor:pointer;
+  color:#2563eb;
+  font-weight:700;
 }
   </style>
 </head>
