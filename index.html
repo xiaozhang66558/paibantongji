@@ -1796,7 +1796,10 @@ function renderStatsPage(){
       .filter(Boolean)
   );
 
-  const dates = window.ORDER_DATES || [];
+  const datesAll = window.ORDER_DATES || [];
+
+  // chỉ lấy 30 ngày gần nhất
+  const dates = datesAll.slice(-30);
 
   // ✅ chỉ lấy ngày nằm trong khoảng chọn
   const activeDates = dates.filter(d=>{
