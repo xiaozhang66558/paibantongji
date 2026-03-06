@@ -2016,8 +2016,15 @@ function renderStatsPage(){
            <th>岗位</th>
            <th>盘口</th>
            <th>入职时间</th>
-           <th class="sortable" data-value="total">总 <span class="sort-arrow">⇅</span></th>
-           <th class="sortable" data-value="avg">平均每天处理 <span class="sort-arrow">⇅</span></th>
+           <th class="sortable" data-value="total" style="min-width:80px">
+             总
+             <span class="sort-arrow">⇅</span>
+           </th>
+
+           <th class="sortable" data-value="avg" style="min-width:120px">
+             平均每天处理
+             <span class="sort-arrow">⇅</span>
+           </th>
            ${activeDates.map(d => `<th>${esc(d)}<br>成功/驳回</th>`).join("")}
          </tr>
        </thead>
