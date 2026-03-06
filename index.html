@@ -1396,7 +1396,6 @@ function buildShiftChart(labels, values){
    ========================================================= */
 async function load(){
   try{
-
     await loadAccountMap();
     await loadOrderStats();
     
@@ -1445,7 +1444,11 @@ async function load(){
     populateStatsFilters();
     renderStatsPage();
     renderOrderStats();   // thêm dòng này
-    
+
+    // 🔹 Thêm 2 dòng này để load và hiển thị lỗi
+    await loadMistakes();
+    renderMistakesPage();
+
   }catch(err){
     console.error(err);
     els.meta.textContent = "Load error: " + (err?.message || err);
