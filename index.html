@@ -1779,62 +1779,11 @@ function renderMistakesPage(){
   );
 
   els.pageMistakes.innerHTML = `
-  // ===== build QC list =====
-const qcSet = new Set();
-
-rows.forEach(r=>{
-  if(r["质检人"]) qcSet.add(r["质检人"]);
-});
-
-const qcList = [...qcSet].sort((a,b)=>a.localeCompare(b,"zh"));
-
-const qcFilter = document.getElementById("qcFilter");
-
-qcFilter.innerHTML =
-  '<option value="">全部质检人</option>' +
-  qcList.map(q=>`<option value="${q}">${q}</option>`).join("");
-
-function updateQcTotal(){
-
-  const qc = qcFilter.value;
-
-  const count = rows.filter(r=>{
-    if(!qc) return true;
-    return r["质检人"] === qc;
-  }).length;
-
-  document.getElementById("qcTotal").innerText =
-    "QC单数: " + count;
-}
-
-updateQcTotal();
-  <div class="card">
-    <h2>员工错误统计</h2>
-    <div class="sub">可搜索/筛选 / 点击 ID 弹窗显示详细信息</div>
-
-    <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px; flex-wrap:wrap;">
-
-      <input 
-        type="text" 
-        id="mistakeSearch" 
-        placeholder="Search ID / 姓名 / 金额 / 岗位 / 盘口"
-        style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; width:260px"
-      />
-
-      <select 
-        id="qcFilter"
-        style="padding:6px 10px; border-radius:6px; border:1px solid #ccc;">
-      </select>
-
-      <div 
-        id="qcTotal"
-        style="font-weight:800; padding:6px 12px; background:#f1f5f9; border-radius:6px;">
-      </div>
-
-    </div>
-
-    <div class="tableWrap">
-  `;
+    <div class="card">
+      <h2>员工错误统计</h2>
+      <div class="sub">可搜索/筛选 / 点击 ID 弹窗显示详细信息</div>
+      <input type="text" id="mistakeSearch" placeholder="Search ID / 姓名 / 金额 / 岗位 / 盘口" style="margin-bottom:10px; padding:6px 10px; border-radius:6px; border:1px solid #ccc; width:300px" />
+      <div class="tableWrap">
         <table>
           <thead>
             <tr>
@@ -1889,32 +1838,14 @@ updateQcTotal();
 
   // search filter
   const searchInput = document.getElementById("mistakeSearch");
-  function filterMistakeTable(){
-
+  searchInput.oninput = ()=>{
     const q = norm(searchInput.value).toLowerCase();
-    const qc = qcFilter.value;
-
     Array.from(els.pageMistakes.querySelectorAll("tbody tr")).forEach(tr=>{
-
       const text = tr.textContent.toLowerCase();
-
-      // cột 质检人 nằm ở index 11
-      const qcName = tr.children[11]?.textContent || "";
-
-      let ok = true;
-
-      if(q && !text.includes(q)) ok = false;
-      if(qc && qcName !== qc) ok = false;
-
-      tr.style.display = ok ? "" : "none";
+      tr.style.display = text.includes(q) ? "" : "none";
     });
-
-    updateQcTotal();
-  }
-
-  searchInput.oninput = filterMistakeTable;
-  qcFilter.onchange = filterMistakeTable;
-  }
+  };
+}
   // ===============================
 // RENDER ORDER STATS
 // ===============================
