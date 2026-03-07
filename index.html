@@ -2091,7 +2091,7 @@ function renderStatsPage(){
               const mid = (m["ID"] || "").trim();
               if(mid !== id) return false;
 
-              const date = (m["复查时间"] || "").slice(0,10);
+              const date = (m["复检时间"] || "").slice(0,10);
 
               if(fromDate && date < fromDate) return false;
               if(toDate && date > toDate) return false;
