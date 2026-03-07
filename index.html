@@ -1883,7 +1883,7 @@ function renderOrderStats(){
           const country = emp?.["国家"] || "-";
           const pos = emp?.["岗位"] || "-";
           const pan = emp?.["盘口"] || "-";
-          const join = ACCOUNT_JOIN_DATE[id] || "-";
+          const join = normDateISO(ACCOUNT_JOIN_DATE[id] || "");
           let total = 0;
 
           dates.forEach(d=>{
@@ -2047,7 +2047,7 @@ function renderStatsPage(){
               const country = emp?.["国家"] || "-";
               const pos = emp?.["岗位"] || "-";
               const pan = emp?.["盘口"] || "-";
-              const join = ACCOUNT_JOIN_DATE[id] || "-";
+              const join = normDateISO(ACCOUNT_JOIN_DATE[id] || "");
 
               let total = 0;
               let validDays = 0;
