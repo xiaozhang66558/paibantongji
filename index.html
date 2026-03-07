@@ -1717,7 +1717,7 @@ async function loadOrderStats(){
     }
 
     map[id][date].success += Number(r["已处理"] || 0);
-    map[id][date].reject  += Number(r["已收回/已提交"] || 0);
+    map[id][date].reject  += Number(r["驳回"] || 0);
   });
 
   ORDER_STATS = map;
