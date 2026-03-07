@@ -2053,12 +2053,18 @@ function renderStatsPage(){
               let validDays = 0;
 
               activeDates.forEach(d => {
+
+                // ❗ bỏ qua ngày trước khi入职
+                if(join && d < join) return;
+
                 const day = v?.[d] || {success:0, reject:0};
                 const dayTotal = (Number(day.success || 0) + Number(day.reject || 0));
+
                 if(dayTotal > 0){
                   total += dayTotal;
                   validDays += 1;
                 }
+
               });
 
               const avg = validDays ? Math.round(total / validDays) : 0;
