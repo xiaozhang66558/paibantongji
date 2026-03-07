@@ -2094,8 +2094,16 @@ function renderStatsPage(){
                   </td>
 
                   ${activeDates.map(d=>{
+
+                    // nếu chưa入职 thì không tính
+                    if(join && d < join){
+                      return `<td>0 / 0</td>`;
+                    }
+
                     const day = v?.[d] || {success:0,reject:0};
+
                     return `<td>${day.success || 0} / ${day.reject || 0}</td>`;
+
                   }).join("")}
                 </tr>
               `;
