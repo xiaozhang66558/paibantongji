@@ -594,6 +594,8 @@ td.pan-cell{
     <select id="groupSel"></select>
     <select id="posSel"></select>
     <select id="countrySel"></select>
+    <input type="text" id="supervisorSearch" placeholder="🔍 名字搜索" list="supervisorDatalist" autocomplete="off" style="min-width: 220px; padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(15,23,42,.10);" />
+<datalist id="supervisorDatalist"></datalist>
     <select id="panSel"></select>
     <div class="meta" id="meta">Loading…</div>
   </div>
@@ -673,6 +675,8 @@ const els = {
   posSel: document.getElementById("posSel"),
   countrySel: document.getElementById("countrySel"),
   panSel: document.getElementById("panSel"),
+  supervisorSearch: document.getElementById("supervisorSearch"),
+  supervisorDatalist: document.getElementById("supervisorDatalist"),
   meta: document.getElementById("meta"),
 
   modal: document.getElementById("modal"),
@@ -833,6 +837,7 @@ function applyFilters(){
   const pos   = els.posSel.value;
   const country = els.countrySel.value;
   const pan   = els.panSel.value;
+  const supervisorName = norm(els.supervisorSearch.value); // 👈 Thêm dòng này
 
   FILTERED = RAW.filter(r=>{
     const 姓名 = norm(r["姓名"]);
@@ -844,6 +849,10 @@ function applyFilters(){
     const 盘口 = norm(r["盘口"]);
     const 国家 = norm(r["国家"]);
     const 工作内容 = norm(r["工作内容"]);
+    const 负责人 = norm(r["负责人"]);       // 👈 Cần khai báo thêm nếu chưa có
+    const 现场培训 = norm(r["现场培训"]);   // 👈 Cần khai báo thêm
+    const 线上组长 = norm(r["线上组长"]);   // 👈 Cần khai báo thêm
+    const 线上培训 = norm(r["线上培训"]);   // 👈 Cần khai báo thêm
 
     if(shift && 班次 !== shift) return false;
     if(team && 团队 !== team) return false;
@@ -851,6 +860,12 @@ function applyFilters(){
     if(pos && 岗位 !== pos) return false;
     if(country && 国家 !== country) return false;
     if(pan && 盘口 !== pan) return false;
+
+    // 👇 Thêm đoạn này
+    if(supervisorName) {
+      const match = (负责人 === supervisorName) || (现场培训 === supervisorName) || (线上组长 === supervisorName) || (线上培训 === supervisorName);
+      if(!match) return false;
+    }
 
     if(q){
       const hay = [
@@ -861,9 +876,7 @@ function applyFilters(){
     return true;
   });
 
-  els.meta.textContent =
-    `Rows: ${RAW.length} • Filtered: ${FILTERED.length} • ${new Date().toLocaleString()}`;
-
+  els.meta.textContent = `Rows: ${RAW.length} • Filtered: ${FILTERED.length} • ${new Date().toLocaleString()}`;
   renderDashboard();
   renderEmployees();
   renderSchedule();
@@ -880,6 +893,7 @@ function applyFilters(){
   els.posSel.addEventListener(evt, applyFilters);
   els.countrySel.addEventListener(evt, applyFilters);
   els.panSel.addEventListener(evt, applyFilters);
+  els.supervisorSearch.addEventListener(evt, applyFilters);
 });
 
 /* =========================================================
@@ -981,154 +995,395 @@ window.openManagerSubs = function(fieldLabel, managerName){
 /* =========================================================
    DASHBOARD
    ========================================================= */
-function renderDashboard(){
-  const rows = FILTERED;
+// Lấy 7 ngày gần nhất từ ORDER_STATS
+function getLast7Days() {
+  const allDates = window.ORDER_DATES || [];
+  if (allDates.length === 0) return [];
+  
+  const sortedDates = [...allDates].sort((a, b) => new Date(b) - new Date(a));
+  return sortedDates.slice(0, 7).sort((a, b) => new Date(a) - new Date(b));
+}
 
-  const totalPeopleSet = getTotalPeopleSet(rows);
-  const totalPeople = totalPeopleSet.size;
-
-  const ownerSet  = getUniqueSetByField(rows,"负责人");
-  const onsiteSet = getUniqueSetByField(rows,"现场培训");
-  const leaderSet = getUniqueSetByField(rows,"线上组长");
-  const trainSet  = getUniqueSetByField(rows,"线上培训");
-
-  const posMap = groupBy(rows,"岗位");
-  const posLabels = [...posMap.keys()];
-  const posCounts = posLabels.map(k=>countByUniqueName(posMap.get(k)));
-
-  const teamMap = groupBy(rows,"团队");
-  const teamLabels = [...teamMap.keys()];
-  const teamCounts = teamLabels.map(k=>countByUniqueName(teamMap.get(k)));
-
-  const allPositions = uniq(rows.map(r=>norm(r["岗位"])||"未填写")).sort((a,b)=>a.localeCompare(b,"zh"));
-
-  const teamRows = [...teamMap.entries()]
-    .map(([team, list])=>{
-      const total = countByUniqueName(list);
-
-      const byPosSet = new Map();
-      allPositions.forEach(p=>byPosSet.set(p, new Set()));
-
-      list.forEach(r=>{
-        const p = norm(r["岗位"])||"未填写";
-        const nm = norm(r["姓名"]);
-        if(isValidName(nm)) byPosSet.get(p).add(nm);
+function showAvgDetails(team, position, avgValue) {
+  // Lọc nhân viên trong team HIỆN TẠI và vị trí HIỆN TẠI
+  const employees = FILTERED.filter(r => {
+    return norm(r["团队"]) === team && norm(r["岗位"]) === position;
+  });
+  
+  const last7Days = getLast7Days();
+  
+  // Tính số đơn 7 ngày cho từng nhân viên trong team này
+  const empDetails = employees.map(emp => {
+    const id = emp["ID"];
+    let totalOrders7Days = 0;
+    const dailyOrders = {};
+    
+    if (id && ORDER_STATS[id]) {
+      last7Days.forEach(date => {
+        const dayData = ORDER_STATS[id][date];
+        if (dayData) {
+          const dayTotal = (dayData.success || 0) + (dayData.reject || 0);
+          totalOrders7Days += dayTotal;
+          dailyOrders[date] = dayTotal;
+        } else {
+          dailyOrders[date] = 0;
+        }
       });
-
-      const byPosFinal = allPositions.map(p=>byPosSet.get(p).size);
-
-      return { team, list, total, byPosFinal };
-    })
-    .sort((a,b)=>b.total-a.total);
-
-  els.pageDashboard.innerHTML = `
-    <div class="card">
-      <h2>统计总览</h2>
-      <div class="sub">按岗位 & 团队统计（点击卡片/图表可弹窗查看员工名单）</div>
-
-      <div class="kpiRow">
-        <div class="kpi" onclick="openModal('总人数名单（去重逻辑：仅姓名）', renderFullTable(FILTERED,'去重统计不影响名单展示：这里展示筛选后的所有原始行'))">
-          <div class="spark"></div>
-          <div class="t">总人数（去重）</div>
-          <div class="v">${totalPeople.toLocaleString()}</div>
-          <div class="hint">姓名（unique）</div>
-        </div>
-
-        <div class="kpi" onclick="openManagerList('负责人', FILTERED)">
-          <div class="spark"></div>
-          <div class="t">负责人</div>
-          <div class="v">${ownerSet.size.toLocaleString()}</div>
-          <div class="hint">点击查看名单 → 再点人看下属</div>
-        </div>
-
-        <div class="kpi" onclick="openManagerList('现场培训', FILTERED)">
-          <div class="spark"></div>
-          <div class="t">现场培训</div>
-          <div class="v">${onsiteSet.size.toLocaleString()}</div>
-          <div class="hint">点击查看名单 → 再点人看下属</div>
-        </div>
-
-        <div class="kpi" onclick="openManagerList('线上组长', FILTERED)">
-          <div class="spark"></div>
-          <div class="t">线上组长</div>
-          <div class="v">${leaderSet.size.toLocaleString()}</div>
-          <div class="hint">点击查看名单 → 再点人看下属</div>
-        </div>
-
-        <div class="kpi" onclick="openManagerList('线上培训', FILTERED)">
-          <div class="spark"></div>
-          <div class="t">线上培训</div>
-          <div class="v">${trainSet.size.toLocaleString()}</div>
-          <div class="hint">点击查看名单 → 再点人看下属</div>
-        </div>
+    } else {
+      last7Days.forEach(date => { dailyOrders[date] = 0; });
+    }
+    
+    return {
+      name: emp["姓名"] || "-",
+      id: id || "-",
+      total7Days: totalOrders7Days,
+      dailyOrders: dailyOrders
+    };
+  });
+  
+  // ✅ CHỈ GIỮ LẠI NHỮNG NGƯỜI CÓ TỔNG ĐƠN > 0
+  const empDetailsFiltered = empDetails.filter(e => e.total7Days > 0);
+  
+  // Nếu không có ai thì thông báo
+  if (empDetailsFiltered.length === 0) {
+    openModal(`${team} - ${position}`, `
+      <div style="padding:20px; text-align:center;">
+        <div class="note">⚠️ Không có nhân viên nào có đơn hàng trong 7 ngày qua.</div>
       </div>
-    </div>
-
-    <div class="grid2">
-      <div class="card">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-          <div>
-            <div style="font-weight:1000; font-size:16px;">岗位分布</div>
-            <div class="note">点击图例或图形 → 弹出该岗位员工名单</div>
-          </div>
-          <button class="btn" onclick="openModal('岗位统计（按姓名去重）', renderTeamOrPosSummary('岗位','岗位'))">查看汇总</button>
-        </div>
-        <div class="chartBox"><canvas id="chartPos"></canvas></div>
+    `);
+    return;
+  }
+  
+  // Sắp xếp theo tổng đơn giảm dần
+  empDetailsFiltered.sort((a, b) => b.total7Days - a.total7Days);
+  
+  // Tìm giá trị thấp nhất >0 cho mỗi ngày
+  const minPositivePerDay = {};
+  last7Days.forEach(date => {
+    let minValue = Infinity;
+    empDetailsFiltered.forEach(emp => {
+      const val = emp.dailyOrders[date];
+      if (val > 0 && val < minValue) {
+        minValue = val;
+      }
+    });
+    minPositivePerDay[date] = minValue === Infinity ? null : minValue;
+  });
+  
+  const totalEmployees = empDetailsFiltered.length;
+  const totalOrdersAll = empDetailsFiltered.reduce((sum, e) => sum + e.total7Days, 0);
+  const actualAvg = totalEmployees > 0 ? (totalOrdersAll / totalEmployees).toFixed(1) : "0.0";
+  
+  // Tạo bảng HTML
+  const html = `
+    <div style="padding: 10px;">
+      <div style="margin-bottom: 16px; padding: 12px; background: #f0f7ff; border-radius: 12px;">
+        <div><strong>团队:</strong> ${esc(team)}</div>
+        <div><strong>岗位:</strong> ${esc(position)}</div>
+        <div><strong>平均7天:</strong> ${actualAvg} 单/人 (总 ${totalOrdersAll} 单 / ${totalEmployees} 人数)</div>
+        <div style="font-size:12px; color:#64748b; margin-top:6px;">※ 🔴 红色 = 最低笔数</div>
+        <div style="font-size:12px; color:#64748b;">※ 最近7天统计</div>
       </div>
-
-      <div class="card">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-          <div>
-            <div style="font-weight:1000; font-size:16px;">团队人数（cột F：团队）</div>
-            <div class="note">点击柱子 → 弹出该团队员工名单</div>
-          </div>
-          <button class="btn" onclick="openModal('团队统计（按姓名去重）', renderTeamOrPosSummary('团队','团队'))">查看汇总</button>
-        </div>
-        <div class="chartBox"><canvas id="chartTeam"></canvas></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-        <div>
-          <div style="font-weight:1000; font-size:16px;">团队统计表（cột F）</div>
-          <div class="note">点击任意数字 → 弹窗查看对应员工名单</div>
-        </div>
-      </div>
-
+      
       <div class="tableWrap">
-        <table>
+        <table style="min-width: 600px;">
           <thead>
             <tr>
-              <th>团队</th>
-              <th>总人数</th>
-              ${allPositions.map(p=>`<th>${esc(p)}</th>`).join("")}
+              <th>#</th>
+              <th>ID</th>
+              <th>姓名</th>
+              <th>Tổng 7 ngày</th>
+              ${last7Days.map(d => `<th style="min-width:70px;">${d.slice(5)}</th>`).join("")}
             </tr>
           </thead>
           <tbody>
-            ${teamRows.map(tr=>{
-              const cells = tr.byPosFinal.map((n,idx)=>{
-                const pos = allPositions[idx];
-                return `<td class="link" onclick="openTeamPos('${esc(tr.team)}','${esc(pos)}')">${n}</td>`;
-              }).join("");
-              return `
-                <tr>
-                  <td class="link" onclick="openTeam('${esc(tr.team)}')">${esc(tr.team)}</td>
-                  <td class="link" onclick="openTeam('${esc(tr.team)}')">${tr.total}</td>
-                  ${cells}
-                </tr>
-              `;
-            }).join("")}
+            ${empDetailsFiltered.map((emp, idx) => `
+              <tr>
+                <td>${idx + 1}</td>
+                <td class="link" onclick="openModal('员工详情', renderFullTable(FILTERED.filter(r=>r['ID']==='${emp.id}'), '员工: ${emp.name}'))">${esc(emp.id)}</td>
+                <td class="link" onclick="openModal('员工详情', renderFullTable(FILTERED.filter(r=>r['ID']==='${emp.id}'), '员工: ${emp.name}'))">${esc(emp.name)}</td>
+                <td style="font-weight:900; color:#2563eb;">${emp.total7Days}</td>
+                ${last7Days.map(d => {
+                  const value = emp.dailyOrders[d];
+                  const minPos = minPositivePerDay[d];
+                  let colorStyle = "";
+                  let displayValue = value;
+                  
+                  if (value > 0 && minPos !== null && value === minPos) {
+                    colorStyle = "color:#dc2626; font-weight:700; background:#fff0f0; border-radius:4px; display:inline-block; padding:2px 6px;";
+                    displayValue = value;
+                  } else if (value === 0) {
+                    colorStyle = "color:#cbd5e1;";
+                    displayValue = "-";
+                  } else if (value > 0) {
+                    colorStyle = "color:#22c55e; font-weight:700;";
+                  }
+                  
+                  return `<td><span style="${colorStyle}">${displayValue}</span></td>`;
+                }).join("")}
+              </tr>
+            `).join("")}
           </tbody>
         </table>
       </div>
     </div>
   `;
-
-  buildPosChart(posLabels, posCounts);
-  buildTeamChart(teamLabels, teamCounts);
+  
+  openModal(`${team} - ${position} (平均: ${avgValue} 单/天)`, html);
 }
+  
+function renderDashboard() {
+  const rows = FILTERED;
 
+  const totalPeopleSet = getTotalPeopleSet(rows);
+  const totalPeople = totalPeopleSet.size;
+
+  const ownerSet = getUniqueSetByField(rows, "负责人");
+  const onsiteSet = getUniqueSetByField(rows, "现场培训");
+  const leaderSet = getUniqueSetByField(rows, "线上组长");
+  const trainSet = getUniqueSetByField(rows, "线上培训");
+
+  const posMap = groupBy(rows, "岗位");
+  const posLabels = [...posMap.keys()];
+  const posCounts = posLabels.map(k => countByUniqueName(posMap.get(k)));
+
+  const teamMap = groupBy(rows, "团队");
+  const teamLabels = [...teamMap.keys()];
+  const teamCounts = teamLabels.map(k => countByUniqueName(teamMap.get(k)));
+
+  // Danh sách các vị trí (岗位) - loại bỏ 出款, 彩金, 客服 để đưa ra ngoài
+  const allPositions = uniq(rows.map(r => norm(r["岗位"]) || "未填写"))
+    .filter(p => p !== "出款" && p !== "彩金" && p !== "客服" && p !== "查单")
+    .sort((a, b) => a.localeCompare(b, "zh"));
+  
+  // 3 vị trí đặc biệt sẽ ở cuối
+  const specialPositions = ["出款", "彩金", "客服", "查单"];
+
+  // Helper: tính tổng đơn và số nhân viên + bình quân ngày
+  function getTeamPositionStats(teamList, position) {
+    const employeesInPos = teamList.filter(r => norm(r["岗位"]) === position);
+    const employeeCount = countByUniqueName(employeesInPos);
+    
+    let totalOrders = 0;
+    let totalWorkingDays = 0;
+    
+    employeesInPos.forEach(emp => {
+      const id = emp["ID"];
+      if (!id || !ORDER_STATS[id]) return;
+      
+      const stats = ORDER_STATS[id];
+      const empDates = new Set();
+      
+      Object.entries(stats).forEach(([date, data]) => {
+        const dayTotal = (data.success || 0) + (data.reject || 0);
+        if (dayTotal > 0) {
+          totalOrders += dayTotal;
+          empDates.add(date);
+        }
+      });
+      
+      totalWorkingDays += empDates.size;
+    });
+    
+    // Bình quân 1 ngày = tổng đơn / tổng số ngày làm việc
+    const avgPerDay = totalWorkingDays > 0 ? (totalOrders / totalWorkingDays).toFixed(1) : "0.0";
+    
+    return { 
+      totalOrders, 
+      employeeCount, 
+      avgPerDay 
+    };
+  }
+
+  const teamRows = [...teamMap.entries()]
+    .map(([team, list]) => {
+      const total = countByUniqueName(list);
+
+      // Thống kê theo vị trí (các vị trí bình thường)
+      const byPosSet = new Map();
+      allPositions.forEach(p => byPosSet.set(p, new Set()));
+      list.forEach(r => {
+        const p = norm(r["岗位"]) || "未填写";
+        if (p !== "出款" && p !== "彩金" && p !== "客服" && p !== "查单") {
+          const nm = norm(r["姓名"]);
+          if (isValidName(nm)) byPosSet.get(p).add(nm);
+        }
+      });
+      const byPosFinal = allPositions.map(p => byPosSet.get(p).size);
+
+      // Thống kê cho 3 vị trí đặc biệt
+      const chukuanStats = getTeamPositionStats(list, "出款");
+      const caijinStats = getTeamPositionStats(list, "彩金");
+      const kefuStats = getTeamPositionStats(list, "客服");
+      const chadanStats = getTeamPositionStats(list, "查单"); 
+
+      return {
+        team,
+        list,
+        total,
+        byPosFinal,
+        chuanStats: chukuanStats,
+        caijinStats,
+        kefuStats,
+        chadanStats
+      };
+    })
+    .sort((a, b) => b.total - a.total);
+
+    els.pageDashboard.innerHTML = `
+      <div class="card">
+        <h2>统计总览</h2>
+        <div class="sub">按岗位 & 团队统计（点击卡片/图表可弹窗查看员工名单）</div>
+  
+        <div class="kpiRow">
+          <div class="kpi" onclick="openModal('总人数名单（去重逻辑：仅姓名）', renderFullTable(FILTERED,'去重统计不影响名单展示：这里展示筛选后的所有原始行'))">
+            <div class="spark"></div>
+            <div class="t">总人数（去重）</div>
+            <div class="v">${totalPeople.toLocaleString()}</div>
+            <div class="hint">姓名（unique）</div>
+          </div>
+  
+          <div class="kpi" onclick="openManagerList('负责人', FILTERED)">
+            <div class="spark"></div>
+            <div class="t">负责人</div>
+            <div class="v">${ownerSet.size.toLocaleString()}</div>
+            <div class="hint">点击查看名单 → 再点人看下属</div>
+          </div>
+  
+          <div class="kpi" onclick="openManagerList('现场培训', FILTERED)">
+            <div class="spark"></div>
+            <div class="t">现场培训</div>
+            <div class="v">${onsiteSet.size.toLocaleString()}</div>
+            <div class="hint">点击查看名单 → 再点人看下属</div>
+          </div>
+  
+          <div class="kpi" onclick="openManagerList('线上组长', FILTERED)">
+            <div class="spark"></div>
+            <div class="t">线上组长</div>
+            <div class="v">${leaderSet.size.toLocaleString()}</div>
+            <div class="hint">点击查看名单 → 再点人看下属</div>
+          </div>
+  
+          <div class="kpi" onclick="openManagerList('线上培训', FILTERED)">
+            <div class="spark"></div>
+            <div class="t">线上培训</div>
+            <div class="v">${trainSet.size.toLocaleString()}</div>
+            <div class="hint">点击查看名单 → 再点人看下属</div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- 团队统计表 - đặt lên trên -->
+      <div class="card">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <div>
+            <div style="font-weight:1000; font-size:16px;">团队统计表</div>
+          </div>
+        </div>
+  
+        <div class="tableWrap">
+          <table style="min-width: 800px;">
+            <thead>
+              <tr>
+                <th>团队</th>
+                <th>总人数</th>
+                ${allPositions.map(p => `<th>${esc(p)}</th>`).join("")}
+                ${specialPositions.map(p => `<th>${esc(p)}</th>`).join("")}
+              </tr>
+            </thead>
+            <tbody>
+              ${teamRows.map(tr => {
+                const cells = tr.byPosFinal.map((n, idx) => {
+                  const pos = allPositions[idx];
+                  return `<td class="link" onclick="openTeamPos('${esc(tr.team)}','${esc(pos)}')">${n}</td>`;
+                }).join("");
+  
+                // 出款
+                const chukuanHtml = `
+                  <td style="padding:4px 8px;">
+                    <div class="link" onclick="openTeamPos('${esc(tr.team)}','出款')" style="font-weight:900; font-size:14px;">${tr.chuanStats.employeeCount}</div>
+                    <div style="font-size:11px; color:#2563eb; margin-top:4px; cursor:pointer;" onclick="showAvgDetails('${esc(tr.team)}','出款','${tr.chuanStats.avgPerDay}')">
+                      📊 ${tr.chuanStats.avgPerDay}
+                    </div>
+                  </td>
+                `;
+                
+                // 彩金
+                const caijinHtml = `
+                  <td style="padding:4px 8px;">
+                    <div class="link" onclick="openTeamPos('${esc(tr.team)}','彩金')" style="font-weight:900; font-size:14px;">${tr.caijinStats.employeeCount}</div>
+                    <div style="font-size:11px; color:#2563eb; margin-top:4px; cursor:pointer;" onclick="showAvgDetails('${esc(tr.team)}','彩金','${tr.caijinStats.avgPerDay}')">
+                      📊 ${tr.caijinStats.avgPerDay}
+                    </div>
+                  </td>
+                `;
+                
+                // 客服
+                const kefuHtml = `
+                  <td style="padding:4px 8px;">
+                    <div class="link" onclick="openTeamPos('${esc(tr.team)}','客服')" style="font-weight:900; font-size:14px;">${tr.kefuStats.employeeCount}</div>
+                    <div style="font-size:11px; color:#2563eb; margin-top:4px; cursor:pointer;" onclick="showAvgDetails('${esc(tr.team)}','客服','${tr.kefuStats.avgPerDay}')">
+                      📊 ${tr.kefuStats.avgPerDay}
+                    </div>
+                  </td>
+                `;
+
+                // 查单
+                const chadanHtml = `
+                  <td style="padding:4px 8px;">
+                    <div class="link" onclick="openTeamPos('${esc(tr.team)}','查单')" style="font-weight:900; font-size:14px;">${tr.chadanStats.employeeCount}</div>
+                    <div style="font-size:11px; color:#2563eb; margin-top:4px; cursor:pointer;" onclick="showAvgDetails('${esc(tr.team)}','查单','${tr.chadanStats.avgPerDay}')">
+                      📊 ${tr.chadanStats.avgPerDay}
+                    </div>
+                  </td>
+                `;
+  
+                return `
+                  <tr>
+                    <td class="link" onclick="openTeam('${esc(tr.team)}')">${esc(tr.team)}</td>
+                    <td class="link" onclick="openTeam('${esc(tr.team)}')">${tr.total}</td>
+                    ${cells}
+                    ${chukuanHtml}
+                    ${caijinHtml}
+                    ${kefuHtml}
+                    ${chadanHtml} 
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+  
+      <!-- 岗位分布 + 团队人数 (grid2) đặt xuống dưới -->
+      <div class="grid2">
+        <div class="card">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+            <div>
+              <div style="font-weight:1000; font-size:16px;">岗位分布</div>
+              <div class="note">点击图例或图形 → 弹出该岗位员工名单</div>
+            </div>
+            <button class="btn" onclick="openModal('岗位统计（按姓名去重）', renderTeamOrPosSummary('岗位','岗位'))">查看汇总</button>
+          </div>
+          <div class="chartBox"><canvas id="chartPos"></canvas></div>
+        </div>
+  
+        <div class="card">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+            <div>
+              <div style="font-weight:1000; font-size:16px;">团队人数</div>
+              <div class="note">点击柱子 → 弹出该团队员工名单</div>
+            </div>
+            <button class="btn" onclick="openModal('团队统计（按姓名去重）', renderTeamOrPosSummary('团队','团队'))">查看汇总</button>
+          </div>
+          <div class="chartBox"><canvas id="chartTeam"></canvas></div>
+        </div>
+      </div>
+    `;
+  
+    buildPosChart(posLabels, posCounts);
+    buildTeamChart(teamLabels, teamCounts);
+}
 function renderTeamOrPosSummary(fieldLabel, fieldName){
   const m = groupBy(FILTERED, fieldName);
   const rows = [...m.entries()]
@@ -1535,6 +1790,17 @@ async function load(){
     buildSelectOptions(els.groupSel, groups, "All groups（组别）");
     buildSelectOptions(els.countrySel, countries, "All 国家（国家）");
     buildSelectOptions(els.posSel, poss, "All positions（岗位）");
+
+    // Gom tất cả tên từ 4 cột (负责人, 现场培训, 线上组长, 线上培训)
+    const allSupervisorNames = new Set();
+    RAW.forEach(r => {
+      const fz = norm(r["负责人"]); if(fz) allSupervisorNames.add(fz);
+      const onsite = norm(r["现场培训"]); if(onsite) allSupervisorNames.add(onsite);
+      const leader = norm(r["线上组长"]); if(leader) allSupervisorNames.add(leader);
+      const trainer = norm(r["线上培训"]); if(trainer) allSupervisorNames.add(trainer);
+    });
+    const sortedNames = [...allSupervisorNames].sort((a,b)=>a.localeCompare(b,"zh"));
+    els.supervisorDatalist.innerHTML = sortedNames.map(n => `<option value="${esc(n)}">`).join("");
 
     await loadMistakes();
     
