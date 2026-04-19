@@ -1004,15 +1004,16 @@ function getLast7Days() {
   return sortedDates.slice(0, 7).sort((a, b) => new Date(a) - new Date(b));
 }
 
+// Hiển thị chi tiết khi click vào bình quân (tô màu top 3 thấp nhất: đỏ đậm, vàng cam, vàng)
 function showAvgDetails(team, position, avgValue) {
-  // Lọc nhân viên trong team HIỆN TẠI và vị trí HIỆN TẠI
+  // Lọc nhân viên trong team và vị trí
   const employees = FILTERED.filter(r => {
     return norm(r["团队"]) === team && norm(r["岗位"]) === position;
   });
   
   const last7Days = getLast7Days();
   
-  // Tính số đơn 7 ngày cho từng nhân viên trong team này
+  // Tính số đơn 7 ngày cho từng nhân viên
   const empDetails = employees.map(emp => {
     const id = emp["ID"];
     let totalOrders7Days = 0;
@@ -1041,10 +1042,9 @@ function showAvgDetails(team, position, avgValue) {
     };
   });
   
-  // ✅ CHỈ GIỮ LẠI NHỮNG NGƯỜI CÓ TỔNG ĐƠN > 0
+  // Chỉ giữ nhân viên có tổng đơn > 0
   const empDetailsFiltered = empDetails.filter(e => e.total7Days > 0);
   
-  // Nếu không có ai thì thông báo
   if (empDetailsFiltered.length === 0) {
     openModal(`${team} - ${position}`, `
       <div style="padding:20px; text-align:center;">
@@ -1057,32 +1057,36 @@ function showAvgDetails(team, position, avgValue) {
   // Sắp xếp theo tổng đơn giảm dần
   empDetailsFiltered.sort((a, b) => b.total7Days - a.total7Days);
   
-  // Tìm giá trị thấp nhất >0 cho mỗi ngày
-  const minPositivePerDay = {};
+  // Hàm lấy top 3 giá trị thấp nhất (>0) từ một mảng số
+  function getTop3LowestPositive(values) {
+    const positives = values.filter(v => v > 0);
+    const uniqueSorted = [...new Set(positives)].sort((a, b) => a - b);
+    return {
+      lowest: uniqueSorted[0],   // thấp nhất
+      second: uniqueSorted[1],   // thấp thứ hai
+      third: uniqueSorted[2]     // thấp thứ ba
+    };
+  }
+  
+  // Tính top 3 cho mỗi ngày
+  const dailyTop = {};
   last7Days.forEach(date => {
-    let minValue = Infinity;
-    empDetailsFiltered.forEach(emp => {
-      const val = emp.dailyOrders[date];
-      if (val > 0 && val < minValue) {
-        minValue = val;
-      }
-    });
-    minPositivePerDay[date] = minValue === Infinity ? null : minValue;
+    const dailyValues = empDetailsFiltered.map(emp => emp.dailyOrders[date]);
+    dailyTop[date] = getTop3LowestPositive(dailyValues);
   });
   
   const totalEmployees = empDetailsFiltered.length;
   const totalOrdersAll = empDetailsFiltered.reduce((sum, e) => sum + e.total7Days, 0);
   const actualAvg = totalEmployees > 0 ? (totalOrdersAll / totalEmployees).toFixed(1) : "0.0";
   
-  // Tạo bảng HTML
+  // Tạo HTML
   const html = `
     <div style="padding: 10px;">
       <div style="margin-bottom: 16px; padding: 12px; background: #f0f7ff; border-radius: 12px;">
         <div><strong>团队:</strong> ${esc(team)}</div>
         <div><strong>岗位:</strong> ${esc(position)}</div>
-        <div><strong>平均7天:</strong> ${actualAvg} 单/人 (总 ${totalOrdersAll} 单 / ${totalEmployees} 人数)</div>
-        <div style="font-size:12px; color:#64748b; margin-top:6px;">※ 🔴 红色 = 最低笔数</div>
-        <div style="font-size:12px; color:#64748b;">※ 最近7天统计</div>
+        <div><strong>平均7天:</strong> ${actualAvg} 单/人 (总 ${totalOrdersAll} 单 / ${totalEmployees} 笔数)</div>
+        <div style="font-size:12px; color:#64748b; margin-top:6px;">※ 颜色: <span style="color:#b91c1c; font-weight:bold;">红色</span> = 最低 | <span style="color:#ea580c; font-weight:bold;">橙色</span> = 倒数第2 | <span style="color:#ca8a04; font-weight:bold;">黄色</span> = 倒数第3</div>
       </div>
       
       <div class="tableWrap">
@@ -1105,18 +1109,23 @@ function showAvgDetails(team, position, avgValue) {
                 <td style="font-weight:900; color:#2563eb;">${emp.total7Days}</td>
                 ${last7Days.map(d => {
                   const value = emp.dailyOrders[d];
-                  const minPos = minPositivePerDay[d];
+                  const top = dailyTop[d];
                   let colorStyle = "";
                   let displayValue = value;
                   
-                  if (value > 0 && minPos !== null && value === minPos) {
-                    colorStyle = "color:#dc2626; font-weight:700; background:#fff0f0; border-radius:4px; display:inline-block; padding:2px 6px;";
-                    displayValue = value;
-                  } else if (value === 0) {
+                  if (value > 0) {
+                    if (top.lowest !== undefined && value === top.lowest) {
+                      colorStyle = "color:#b91c1c; font-weight:700; background:#fee2e2; border-radius:4px; display:inline-block; padding:2px 6px;";
+                    } else if (top.second !== undefined && value === top.second) {
+                      colorStyle = "color:#ea580c; font-weight:700; background:#fed7aa; border-radius:4px; display:inline-block; padding:2px 6px;";
+                    } else if (top.third !== undefined && value === top.third) {
+                      colorStyle = "color:#ca8a04; font-weight:700; background:#fef3c7; border-radius:4px; display:inline-block; padding:2px 6px;";
+                    } else {
+                      colorStyle = "color:#22c55e; font-weight:700;";
+                    }
+                  } else {
                     colorStyle = "color:#cbd5e1;";
                     displayValue = "-";
-                  } else if (value > 0) {
-                    colorStyle = "color:#22c55e; font-weight:700;";
                   }
                   
                   return `<td><span style="${colorStyle}">${displayValue}</span></td>`;
@@ -1129,7 +1138,7 @@ function showAvgDetails(team, position, avgValue) {
     </div>
   `;
   
-  openModal(`${team} - ${position} (平均: ${avgValue} 单/天)`, html);
+  openModal(`${team} - ${position} (Bình quân: ${avgValue} 单/天)`, html);
 }
   
 function renderDashboard() {
