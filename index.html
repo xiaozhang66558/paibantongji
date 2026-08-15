@@ -2037,20 +2037,76 @@ async function loadMistakes(){
   }
 }
 
+let MIST_FROM = "";
+let MIST_TO   = "";
+
+function mistToday(){
+  const d = new Date();
+  const p = n => String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+}
+
+window.setMistRange = function(kind){
+  const d = new Date();
+  const p = n => String(n).padStart(2,"0");
+  if(kind === "all"){
+    MIST_FROM = ""; MIST_TO = "";
+  } else if(kind === "month"){
+    MIST_FROM = `${d.getFullYear()}-${p(d.getMonth()+1)}-01`;
+    MIST_TO   = mistToday();
+  } else if(kind === "7d"){
+    const s = new Date(d.getTime() - 6*86400000);
+    MIST_FROM = `${s.getFullYear()}-${p(s.getMonth()+1)}-${p(s.getDate())}`;
+    MIST_TO   = mistToday();
+  }
+  renderMistakesPage();
+};
+
 function renderMistakesPage(){
 
   const allowedIds = new Set(
     FILTERED.map(r => (r["ID"] || "").trim())
   );
 
-  const rows = MISTAKES.filter(r =>
+  const inRoster = MISTAKES.filter(r =>
     allowedIds.has((r["ID"] || "").trim())
   );
+
+  // 按 质检时间 过滤
+  let rows = inRoster.filter(r=>{
+    const d = (r["质检时间"] || "").slice(0,10);
+    if(MIST_FROM){ if(!d || d < MIST_FROM) return false; }
+    if(MIST_TO){   if(!d || d > MIST_TO)   return false; }
+    return true;
+  });
+
+  // 最新的排在最前面
+  rows.sort((a,b)=> (b["质检时间"]||"").localeCompare(a["质检时间"]||""));
+
+  const allDates = inRoster.map(r=>(r["质检时间"]||"").slice(0,10)).filter(Boolean).sort();
+  const newest = allDates.length ? allDates[allDates.length-1] : "-";
+  const oldest = allDates.length ? allDates[0] : "-";
 
   els.pageMistakes.innerHTML = `
     <div class="card">
       <h2>员工错误统计</h2>
       <div class="sub">可搜索/筛选 / 点击 ID 弹窗显示详细信息</div>
+
+      <div class="statsFilters" style="flex-wrap:wrap; align-items:center; justify-content:center;">
+        <span style="font-weight:900; font-size:12px;">质检时间：</span>
+        <input type="date" id="mistFrom" value="${esc(MIST_FROM)}" />
+        <span style="font-weight:900;">→</span>
+        <input type="date" id="mistTo" value="${esc(MIST_TO)}" />
+        <button class="btn" onclick="setMistRange('7d')">最近7天</button>
+        <button class="btn" onclick="setMistRange('month')">本月</button>
+        <button class="btn" onclick="setMistRange('all')">全部</button>
+      </div>
+
+      <div class="note">
+        显示 <b>${rows.length.toLocaleString()}</b> / 共 <b>${inRoster.length.toLocaleString()}</b> 条　·　
+        数据范围：<b>${esc(oldest)}</b> ~ <b>${esc(newest)}</b>
+      </div>
+
       <input type="text" id="mistakeSearch" placeholder="Search ID / 姓名 / 金额 / 岗位 / 盘口" style="margin-bottom:10px; padding:6px 10px; border-radius:6px; border:1px solid #ccc; width:300px" />
       <div class="tableWrap">
         <table>
@@ -2068,7 +2124,7 @@ function renderMistakesPage(){
               <th>错误类型</th>
               <th class="sortable" data-value="Deduct 扣分">Deduct 扣分 <span class="sort-arrow">⇅</span></th>
               <th>质检人</th>
-              <th>质检时间</th>
+              <th class="sortable">质检时间 <span class="sort-arrow">⇅</span></th>
               <th>小组长复审</th>
               <th>first check right or wrong 质检人对/错</th>
               <th>复检时间</th>
@@ -2093,7 +2149,7 @@ function renderMistakesPage(){
                 <td>${esc(r["错误类型"])}</td>
                 <td class="sortable" data-value="${r["Deduct 扣分"] || 0}">${esc(r["Deduct 扣分"])}</td>
                 <td>${esc(r["质检人"])}</td>
-                <td>${esc(r["质检时间"])}</td>
+                <td data-value="${esc((r["质检时间"]||"").replace(/-/g,""))}">${esc(r["质检时间"])}</td>
                 <td>${esc(r["小组长复审"])}</td>
                 <td>${esc(r["质检人对/错"])}</td>
                 <td>${esc(r["复检时间"])}</td>
@@ -2104,6 +2160,13 @@ function renderMistakesPage(){
       </div>
     </div>
   `;
+
+  // 日期选择
+  const fromEl = document.getElementById("mistFrom");
+  if(fromEl) fromEl.onchange = ()=>{ MIST_FROM = fromEl.value; renderMistakesPage(); };
+
+  const toEl = document.getElementById("mistTo");
+  if(toEl) toEl.onchange = ()=>{ MIST_TO = toEl.value; renderMistakesPage(); };
 
   // search filter
   const searchInput = document.getElementById("mistakeSearch");
