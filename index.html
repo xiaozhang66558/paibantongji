@@ -691,32 +691,26 @@ function norm(v){ return s(v).replace(/\s+/g," ").trim(); }
 function uniq(arr){ return [...new Set(arr.filter(Boolean))]; }
 function normDateISO(v){
 
-  const str = (v ?? "").toString().trim();
+  let str = (v ?? "").toString().trim();
   if(!str) return "";
 
-  // ISO
-  if(/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  // 一个单元格里有多个时间 → 只取第一行
+  str = str.split(/[\r\n]+/)[0].trim();
 
-  // 中文日期 2026年2月8日
-  let m = str.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日$/);
-  if(m){
-    const y = m[1];
-    const mm = String(m[2]).padStart(2,"0");
-    const dd = String(m[3]).padStart(2,"0");
-    return `${y}-${mm}-${dd}`;
+  const pad = n => String(n).padStart(2,"0");
+
+  // Google Sheets serial number (46204 等)
+  if(/^\d{5}(\.\d+)?$/.test(str)){
+    const d = new Date(Date.UTC(1899,11,30) + Math.floor(Number(str))*86400000);
+    return d.toISOString().slice(0,10);
   }
 
-  // YYYY/M/D
-  m = str.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})$/);
-  if(m){
-    const y = m[1];
-    const mm = String(m[2]).padStart(2,"0");
-    const dd = String(m[3]).padStart(2,"0");
-    return `${y}-${mm}-${dd}`;
-  }
+  // YYYY-M-D / YYYY/M/D / 2026年4月28日 —— 在字符串任意位置
+  let m = str.match(/(\d{4})[\/\-.年](\d{1,2})[\/\-.月](\d{1,2})/);
+  if(m) return `${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
 
-  // D/M/YYYY
-  m = str.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+  // D/M/YYYY (28/04/2026)
+  m = str.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);
   if(m){
     let a = +m[1], b = +m[2], y = m[3];
     let day, month;
@@ -725,10 +719,10 @@ function normDateISO(v){
     else if(b > 12){ month = a; day = b; }
     else { day = a; month = b; }
 
-    return `${y}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+    return `${y}-${pad(month)}-${pad(day)}`;
   }
 
-  return str;
+  return "";
 }
 function esc(str){
   return (str??"").toString()
