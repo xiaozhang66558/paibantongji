@@ -1966,6 +1966,23 @@ async function loadAccountMap(){
 // LOAD ORDER STATS
 // ===============================
 
+// 日期列容错：表头坏掉（例如 #REF!）时，自动找出真正的日期列
+function pickOrderDate(r){
+
+  const direct = normDateISO(r["日期"]);
+  if(direct) return direct;
+
+  const skip = new Set(["后台账号","已处理","驳回"]);
+
+  for(const [k,v] of Object.entries(r)){
+    if(skip.has((k||"").trim())) continue;
+    const d = normDateISO(v);
+    if(d) return d;
+  }
+
+  return "";
+}
+
 async function loadOrderStats(){
 
   const map = {};
@@ -1999,7 +2016,7 @@ async function loadOrderStats(){
       const id = ACCOUNT_MAP[acc];
       if(!id) continue;
 
-      const date = normDateISO(r["日期"]);
+      const date = pickOrderDate(r);
       if(!date) continue;
 
       dates.add(date);
