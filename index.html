@@ -1985,6 +1985,10 @@ function pickOrderDate(r){
 
 async function loadOrderStats(){
 
+  // 今天（本地时间），用于过滤未来日期
+  const _t = new Date();
+  const TODAY_ISO = `${_t.getFullYear()}-${String(_t.getMonth()+1).padStart(2,"0")}-${String(_t.getDate()).padStart(2,"0")}`;
+
   const map = {};
   const dates = new Set();
   let totalRows = 0;
@@ -2018,6 +2022,7 @@ async function loadOrderStats(){
 
       const date = pickOrderDate(r);
       if(!date) continue;
+      if(date > TODAY_ISO) continue;   // 忽略未来日期（填表预填到月底）
 
       dates.add(date);
       usedRows++;
