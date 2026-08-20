@@ -1968,45 +1968,58 @@ async function loadAccountMap(){
 
 async function loadOrderStats(){
 
-  // 合并读取：填表（当月）+ 工作表4（3-7月）
-  const data = [];
-  for(const url of ORDER_API_LIST){
-    try{
-      const res = await fetch(url, { cache:"no-store" });
-      const raw = await res.json();
-      const rows = Array.isArray(raw) ? raw : [];
-      console.log(`📦 ${decodeURIComponent(url.split("/").pop())}：${rows.length} 行`);
-      data.push(...rows);
-    }catch(e){
-      console.error("订单数据加载失败:", url, e);
-    }
-  }
-  console.log(`📦 订单数据合计：${data.length} 行`);
-
   const map = {};
   const dates = new Set();
+  let totalRows = 0;
+  let usedRows = 0;
 
-  data.forEach(r=>{
-    const acc = (r["后台账号"] || "").trim().toLowerCase();
-    const id = ACCOUNT_MAP[acc];
-    if(!id) return;
+  // 合并读取：填表（当月）+ 工作表4（3-7月）
+  // ⚠️ 每个表读完马上处理，不要 push(...rows)（20万行会爆调用栈）
+  for(const url of ORDER_API_LIST){
 
-    const date = normDateISO(r["日期"]);   // ✅ tạo date trước
-    if(!date) return;
+    let rows = [];
+    const tabName = decodeURIComponent(url.split("/").pop());
 
-    dates.add(date);                       // ✅ add sau khi có date
-
-    if(!map[id]) map[id] = {};
-    if(!map[id][date]){
-      map[id][date] = { success:0, reject:0 };
+    try{
+      const res = await fetch(url, { cache:"no-store" });
+      if(!res.ok) throw new Error("Fetch failed: " + res.status);
+      const raw = await res.json();
+      rows = Array.isArray(raw) ? raw : [];
+      console.log(`📦 ${tabName}：${rows.length} 行`);
+    }catch(e){
+      console.error("订单数据加载失败:", tabName, e);
+      continue;
     }
 
-    map[id][date].success += Number(r["已处理"] || 0);
-    map[id][date].reject  += Number(r["驳回"] || 0);
-  });
+    totalRows += rows.length;
+
+    for(const r of rows){
+
+      const acc = (r["后台账号"] || "").trim().toLowerCase();
+      const id = ACCOUNT_MAP[acc];
+      if(!id) continue;
+
+      const date = normDateISO(r["日期"]);
+      if(!date) continue;
+
+      dates.add(date);
+      usedRows++;
+
+      if(!map[id]) map[id] = {};
+      if(!map[id][date]){
+        map[id][date] = { success:0, reject:0 };
+      }
+
+      map[id][date].success += Number(r["已处理"] || 0);
+      map[id][date].reject  += Number(r["驳回"] || 0);
+    }
+  }
 
   ORDER_STATS = map;
   window.ORDER_DATES = [...dates].sort();
+
+  console.log(`📦 订单数据合计：${totalRows} 行 → 有效 ${usedRows} 行`);
+  console.log(`📅 日期范围：${window.ORDER_DATES[0] || "-"} ~ ${window.ORDER_DATES[window.ORDER_DATES.length-1] || "-"}（${window.ORDER_DATES.length} 天）`);
 }
 async function loadMistakes(){
   try{
