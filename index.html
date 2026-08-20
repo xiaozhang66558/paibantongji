@@ -635,9 +635,11 @@ const SHEET_API = "https://opensheet.elk.sh/1e38ZBHG0B0nxODaooPhgreG67A2RLxLxrpP
 
 // ===== ORDER STATISTICS API =====
 
-// 网站数据 = 脚本生成的干净表（填表 + 工作表4 全部月份）
-const ORDER_API =
-"https://opensheet.vercel.app/1TEp-YzwjFKjorR4Xpmrb6UiKq2maMmawIW6oYQI75qM/网站数据";
+// 订单数据 = 效率表 的 填表（当月）+ 工作表4（3-7月），合并读取
+const ORDER_API_LIST = [
+  "https://opensheet.vercel.app/1TEp-YzwjFKjorR4Xpmrb6UiKq2maMmawIW6oYQI75qM/填表",
+  "https://opensheet.vercel.app/1TEp-YzwjFKjorR4Xpmrb6UiKq2maMmawIW6oYQI75qM/工作表4"
+];
 
 const ACCOUNT_API =
 "https://opensheet.elk.sh/1e38ZBHG0B0nxODaooPhgreG67A2RLxLxrpP8Sas_vZA/账号";
@@ -1965,10 +1967,21 @@ async function loadAccountMap(){
 // ===============================
 
 async function loadOrderStats(){
-  const res = await fetch(ORDER_API, { cache:"no-store" });
-  const raw = await res.json();
-  const data = Array.isArray(raw) ? raw : [];
-  console.log(`📦 订单数据：${data.length} 行`);
+
+  // 合并读取：填表（当月）+ 工作表4（3-7月）
+  const data = [];
+  for(const url of ORDER_API_LIST){
+    try{
+      const res = await fetch(url, { cache:"no-store" });
+      const raw = await res.json();
+      const rows = Array.isArray(raw) ? raw : [];
+      console.log(`📦 ${decodeURIComponent(url.split("/").pop())}：${rows.length} 行`);
+      data.push(...rows);
+    }catch(e){
+      console.error("订单数据加载失败:", url, e);
+    }
+  }
+  console.log(`📦 订单数据合计：${data.length} 行`);
 
   const map = {};
   const dates = new Set();
